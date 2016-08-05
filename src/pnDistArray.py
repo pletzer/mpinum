@@ -2,16 +2,7 @@
 
 """
 Distributed array class
-
-This code is provided with the hope that it will be useful. 
-No guarantee is provided whatsoever. Use at your own risk.
-
-See LICENSE.txt for conditions of use. 
-
-Alex Pletzer (2012)
 """
-
-__version__ = "$Id: pnDistArray.py 49 2016-05-27 11:08:50Z pletzer $"
 
 # standard imports
 import copy

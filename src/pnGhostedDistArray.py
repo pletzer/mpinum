@@ -2,20 +2,11 @@
 
 """
 Distributed array class with ghosts
-
-This code is provided with the hope that it will be useful. 
-No guarantee is provided whatsoever. Use at your own risk.
-
-See LICENSE.txt for conditions of use. 
-
-Alex Pletzer (2012)
 """
 
 import pnumpy
 import numpy
 from pnumpy import DistArray
-
-__version__ = "$Id: pnGhostedDistArray.py 50 2016-05-27 11:12:29Z pletzer $"
 
 class GhostedDistArray(pnumpy.DistArray):
 

@@ -2,16 +2,7 @@
 
 """
 Muti-dimensional domain decomposition.
-
-This code is provided with the hope that it will be useful. 
-No guarantee is provided whatsoever. Use at your own risk.
-
-See LICENSE.txt for conditions of use. 
-
-Alex Pletzer (2012)
 """
-
-__version__ = "$Id: pnCubeDecomp.py 43 2016-05-26 20:11:56Z pletzer $"
 
 # standard modules
 import operator
@@ -82,7 +73,7 @@ class CubeDecomp:
         else:
             return []
 
-    def getNeighborProc(self, proc, offset, periodic = None):
+    def getNeighborProc(self, proc, offset, periodic=None):
         """
         Get the neighbor to a processor 
         @param proc the reference processor rank

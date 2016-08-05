@@ -2,16 +2,7 @@
 
 """
 Multi-array iterator class.
-
-This code is provided with the hope that it will be useful. 
-No guarantee is provided whatsoever. Use at your own risk.
-
-See LICENSE.txt for conditions of use. 
-
-Alex Pletzer (2012)
 """
-
-__version__ = "$Id: pnMultiArrayIter.py 46 2016-05-26 23:12:58Z pletzer $"
 
 # standard modules
 import operator
