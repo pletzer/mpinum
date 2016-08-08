@@ -147,8 +147,9 @@ def distArrayFactory(BaseClass):
 
     return DistArrayAny
 
-# create DistArray class
+# create different dist array flavors
 DistArray = distArrayFactory(numpy.ndarray)
+MaskedDistArray = distArrayFactory(numpy.ma.masked_array)
 
 def daArray(arry, dtype=numpy.float):
     """
@@ -179,6 +180,37 @@ def daOnes(shap, dtype=numpy.float):
     res = DistArray(shap, dtype)
     res[:] = 1
     return res
+
+def mdaArray(arry, dtype=numpy.float):
+    """
+    Array constructor
+    @param arry numpy-like array
+    """
+    a = numpy.array(arry, dtype)
+    res = MaskedDistArray(a.shape, a.dtype)
+    res[:] = a # copy
+    return res
+
+def mdaZeros(shap, dtype=numpy.float):
+    """
+    Zero constructor
+    @param shap the shape of the array
+    @param dtype the numpy data type 
+    """
+    res = MaskedDistArray(shap, dtype)
+    res[:] = 0
+    return res
+
+def mdaOnes(shap, dtype=numpy.float):
+    """
+    One constructor
+    @param shap the shape of the array
+    @param dtype the numpy data type 
+    """
+    res = MaskedDistArray(shap, dtype)
+    res[:] = 1
+    return res
+
 
 ######################################################################
 
