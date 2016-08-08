@@ -116,6 +116,38 @@ class TestDistArray(unittest.TestCase):
         # free
         da.free()
 
+    def test1d_4(self):
+        """
+        1D, bool
+        """
+
+        dtyp = numpy.bool_
+
+        # MPI stuff
+        comm = MPI.COMM_WORLD
+        rk = comm.Get_rank()
+        sz = comm.Get_size()
+
+        # create the dist array
+        n = 10
+        da = pnumpy.daZeros( (n,), dtyp )
+        # expose the last element
+        da.expose( slce=(slice(-1, None, None),), winID='left' )
+        # set data
+        da[:] = [(i%2 == 0) for i in range(n)]
+        # access remote data
+        leftRk = (rk - 1) % sz
+        print('proc %d tries to access data from %d' % (rk, leftRk))
+        leftData = da.get(pe=leftRk, winID='left')
+        print('leftData for rank %d = %s' % (rk, str(leftData)))
+        # check
+        if leftRk < rk:
+            self.assertEqual(leftData[0], da[-1] - 100)
+        else:
+            self.assertEqual(leftData[0], da[-1] + 100*(sz-1))
+        # free
+        da.free()
+
     def test2d_1(self):
         
 

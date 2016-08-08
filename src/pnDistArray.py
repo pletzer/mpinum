@@ -16,7 +16,7 @@ from functools import reduce
 def distArrayFactory(BaseClass):
     """
     Returns a distributed array class that derives from BaseClass
-    @param BaseClass base class, e.g. numpy.ndarray or numpy.ma
+    @param BaseClass base class, e.g. numpy.ndarray or numpy.ma.masked_array
     @return dist array class
     """
 
@@ -69,6 +69,8 @@ def distArrayFactory(BaseClass):
                 self.dtypeMPI = MPI.INT16_T
             elif dtyp == numpy.int8:
                 self.dtypeMPI = MPI.INT8_T
+            elif dtyp == numpy.bool_:
+                self.dtypeMPI = MPI.BYTE
             else:
                 raise NotImplementedError
 
