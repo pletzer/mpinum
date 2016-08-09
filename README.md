@@ -1,5 +1,5 @@
 # pnumpy
-Parallel computing in N dimensions and in python
+Parallel computing in N dimensions made easy in Python
 
 ## Overview
 
@@ -49,6 +49,8 @@ mpiexec -n 4 python testDistArray.py
 
 ## How to use pnumpy
 
+### A lightweight extension to numpy arrays
+
 Think of numpy arrays with additional data members and methods to access neighboring data. To create a ghosted distributed array (gda):
 
 ```python
@@ -57,7 +59,12 @@ from pnumpy import gdaZeros
 da = gdaZeros( (4, 5), numpy.float32, numGhosts=1 )
 ```
 
-The above syntax should be familiar to anyone using numpy arrays. Each MPI process will get its own version of the array. As an example, one can set the array values on each process to:
+The above syntax should be familiar to anyone using numpy arrays. Each MPI process will get its own version of the array. Note that indexing is local to the array stored on a given process. This means that da[0, 0] will the first element on 
+that process and da[-1, :] will the last row (following the usual numpy indexing rule).
+
+It also means that pnumpy pnumpy does not assume a domain decomposition. The relationship between the arrays stored on different processes can be arbotrary, not necessarily a regular domain decomposition. 
+
+The data stored on each process can be set using indexing, slicing and ellipses. For instance:
 
 ```python
 rk = da.getMPIRank()
@@ -76,5 +83,5 @@ Any process can fetch the ghost data stored on another process (not necessarily 
 otherData = da.getData(otherMPIRank, side=(0, -1))
 ```
 
-where otherMPIRank is the other process's MPI rank. Note that this is a collective operation, all ranks are involved. 
+where otherMPIRank is the other process's MPI rank. Note that this is a collective operation -- all ranks are involved. 
 Passing None in place of otherMPIRank is a no-operation -- this is useful if some processes don't have a neighbor.
