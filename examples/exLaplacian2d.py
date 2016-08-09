@@ -61,7 +61,7 @@ yy = numpy.outer( numpy.ones( (nx/npx,), numpy.float64 ), ys[jBeg:jEnd] )
 zz = numpy.sin(numpy.pi*xx) * numpy.cos(2*numpy.pi*yy)
 
 # create and set distributed array
-zda = pnumpy.ghZeros( zz.shape, zz.dtype, numGhosts=1 )
+zda = pnumpy.gdaZeros( zz.shape, zz.dtype, numGhosts=1 )
 zda[:] = zz
 
 # compute the star Laplacian in the interior, this does not require
@@ -69,7 +69,7 @@ zda[:] = zz
 
 laplaceZ = 4 * zda[:]
 
-# local neighbor contributions, no communication
+# local neighbour contributions, no communication
 laplaceZ[1:  , :] -= zda[0:-1,:]
 laplaceZ[0:-1, :] -= zda[1:  ,:]
 laplaceZ[:, 1:  ] -= zda[:,0:-1]
@@ -79,7 +79,7 @@ laplaceZ[:, 0:-1] -= zda[:,1:  ]
 # now compute and fill in the halo
 
 # find the procs to the north, east, south, and west. This call will
-# return None if there is no neighbor. 
+# return None if there is no neighbour. 
 noProc = dc.getNeighborProc(rk, ( 1,  0), periodic = (False, True)) 
 soProc = dc.getNeighborProc(rk, (-1,  0), periodic = (False, True)) 
 eaProc = dc.getNeighborProc(rk, ( 0,  1), periodic = (False, True)) 
@@ -91,7 +91,7 @@ if noProc is None:
 if soProc is None:
     laplaceZ[0,:] -= zda[0,:]
 
-# fetch the remote data in the halo of the neighboring processor. When
+# fetch the remote data in the halo of the neighbouring processor. When
 # the first argument is None, this amounts to a no-op (zero data are 
 # returned. Note that winID refers to the neighbour domain. For instance,
 # the data to the west of the local domain correspond to the east halo

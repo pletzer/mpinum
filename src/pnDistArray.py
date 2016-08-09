@@ -186,10 +186,13 @@ def distArrayFactory(BaseClass):
 
     return DistArrayAny
 
-# create different dist array flavors
+# create different dist array class flavors
 DistArray = distArrayFactory(numpy.ndarray)
 MaskedDistArray = distArrayFactory(numpy.ma.masked_array)
 
+#
+# Distributed array static constructors
+#
 def daArray(arry, dtype=numpy.float):
     """
     Array constructor for numpy distributed array
@@ -220,6 +223,9 @@ def daOnes(shap, dtype=numpy.float):
     res[:] = 1
     return res
 
+#
+# Masked distributed array static constructors 
+#
 def mdaArray(arry, dtype=numpy.float, mask=None):
     """
     Array constructor for masked distributed array

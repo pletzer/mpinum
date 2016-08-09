@@ -55,8 +55,8 @@ class Upwind:
     self.coeff = self.v * self.upDirection / self.deltas
 
     # initializing the field
-    self.f = pnumpy.ghZeros( self.nsLocal, numpy.float64, numGhosts=1 )
-    self.fOld = pnumpy.ghZeros( self.nsLocal, numpy.float64, numGhosts=1 )
+    self.f = pnumpy.gdaZeros( self.nsLocal, numpy.float64, numGhosts=1 )
+    self.fOld = pnumpy.gdaZeros( self.nsLocal, numpy.float64, numGhosts=1 )
 
     # initialize lower corner to one
     if self.rk == 0:

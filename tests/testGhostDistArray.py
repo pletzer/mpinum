@@ -21,7 +21,7 @@ class TestPNumpy(unittest.TestCase):
 
         # create the ghosted dist array
         n = 10
-        da = pnumpy.ghZeros( (n,), dtyp, numGhosts=1 )
+        da = pnumpy.gdaZeros( (n,), dtyp, numGhosts=1 )
 
         # set data to process dependent value, 
         # da.rk is the mpi proc ID
@@ -50,7 +50,7 @@ class TestPNumpy(unittest.TestCase):
         """
 
         # create the dist array, the sizes are local to each processor
-        da = pnumpy.ghZeros( (2,3), numpy.float32, numGhosts=1 )
+        da = pnumpy.gdaZeros( (2,3), numpy.float32, numGhosts=1 )
 
         # processor rank and number of processes
         rk = da.rk
@@ -75,7 +75,7 @@ class TestPNumpy(unittest.TestCase):
         """
 
         # create the dist array, the sizes are local to each processor
-        da = pnumpy.ghZeros( (2,3), numpy.float32, numGhosts=1 )
+        da = pnumpy.gdaZeros( (2,3), numpy.float32, numGhosts=1 )
 
         # processor rank and number of processes
         rk = da.rk
@@ -136,8 +136,8 @@ class TestPNumpy(unittest.TestCase):
         nsLocal = numpy.array([s.stop - s.start for s in localSlices])
         
         # create the dist arrays
-        da = pnumpy.ghZeros(nsLocal, numpy.float32, numGhosts=1)
-        laplacian = pnumpy.ghZeros(nsLocal, numpy.float32, numGhosts=1)
+        da = pnumpy.gdaZeros(nsLocal, numpy.float32, numGhosts=1)
+        laplacian = pnumpy.gdaZeros(nsLocal, numpy.float32, numGhosts=1)
 
         # set the data
         for it in MultiArrayIter(nsLocal):
