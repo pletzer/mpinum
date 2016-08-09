@@ -32,7 +32,7 @@ class TestPNumpy(unittest.TestCase):
         leftRk = (da.rk - 1) % da.sz
 
         print('proc %d tries to access data from %d' % (da.rk, leftRk))
-        leftData = da.get(pe=leftRk, winID=(1,))
+        leftData = da.getData(pe=leftRk, winID=(1,))
 
         print('leftData for rank %d = %s' % (da.rk, str(leftData)))
         # check
@@ -60,7 +60,7 @@ class TestPNumpy(unittest.TestCase):
         da[:] = rk
 
         # access neighbor data, collective operation
-        southData = da.get( (rk-1) % nprocs, winID=(1,0) )
+        southData = da.getData( (rk-1) % nprocs, winID=(1,0) )
 
         # check 
         self.assertEqual(southData.min(), (rk - 1) % nprocs)
@@ -90,7 +90,7 @@ class TestPNumpy(unittest.TestCase):
             otherRk = None
 
         # collective operation. all procs must call "get"
-        southData = da.get( otherRk, winID=(1,0) )
+        southData = da.getData( otherRk, winID=(1,0) )
 
         # check 
         if otherRk is not None and otherRk >= 0:
@@ -180,8 +180,8 @@ class TestPNumpy(unittest.TestCase):
             # accessing the data on the low-end side on rank procM we
             # access the slide on the positive side on procM (directionP).
             # And inversely for the high-end side data...
-            dataM = da.get(procM, winID=directionP)
-            dataP = da.get(procP, winID=directionM)
+            dataM = da.getData(procM, winID=directionP)
+            dataP = da.getData(procP, winID=directionM)
 
             # finish off the operator
             laplacian[da.getEllipsis(winID=directionM)] -= dataM

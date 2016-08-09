@@ -42,7 +42,7 @@ class TestDistArray(unittest.TestCase):
         # access remote data
         leftRk = (rk - 1) % sz
         print('proc {0} tries to access data from {1}'.format(rk, leftRk))
-        leftData = da.get(pe=leftRk, winID='left')
+        leftData = da.getData(pe=leftRk, winID='left')
         print('leftData for rank {0} = {1}'.format(rk, str(leftData)))
         # check
         if leftRk < rk:
@@ -74,7 +74,7 @@ class TestDistArray(unittest.TestCase):
         # access remote data
         leftRk = (rk - 1) % sz
         print('proc %d tries to access data from %d' % (rk, leftRk))
-        leftData = da.get(pe=leftRk, winID='left')
+        leftData = da.getData(pe=leftRk, winID='left')
         print('leftData for rank {0} = {1}'.format(rk, str(leftData)))
         # check
         if leftRk < rk:
@@ -106,7 +106,7 @@ class TestDistArray(unittest.TestCase):
         # access remote data
         leftRk = (rk - 1) % sz
         print('proc %d tries to access data from %d' % (rk, leftRk))
-        leftData = da.get(pe=leftRk, winID='left')
+        leftData = da.getData(pe=leftRk, winID='left')
         print('leftData for rank %d = %s' % (rk, str(leftData)))
         # check
         if leftRk < rk:
@@ -138,7 +138,7 @@ class TestDistArray(unittest.TestCase):
         # access remote data
         leftRk = (rk - 1) % sz
         print('proc %d tries to access data from %d' % (rk, leftRk))
-        leftData = da.get(pe=leftRk, winID='left')
+        leftData = da.getData(pe=leftRk, winID='left')
         print('leftData for rank %d = %s' % (rk, str(leftData)))
         # check
         if leftRk < rk:
@@ -166,7 +166,7 @@ class TestDistArray(unittest.TestCase):
         da[:] = rk
 
         # access the remote data, collective operation
-        northData = da.get( (rk-1) % nprocs, winID='n' )
+        northData = da.getData( (rk-1) % nprocs, winID='n' )
 
         # check sum
         checkSum = da.reduce(lambda x,y:x+y, rootPe=0)

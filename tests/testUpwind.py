@@ -90,11 +90,11 @@ class Upwind:
 
     # fetch neighboring data. This is the only place where there is communication
     self.f[:1, :, :] -= deltaTime*self.coeff[0]* \
-                        self.fOld.get(self.neighbRk[0], self.neighbSide[0])
+                        self.fOld.getData(self.neighbRk[0], self.neighbSide[0])
     self.f[:, :1, :] -= deltaTime*self.coeff[1]* \
-                        self.fOld.get(self.neighbRk[1], self.neighbSide[1])
+                        self.fOld.getData(self.neighbRk[1], self.neighbSide[1])
     self.f[:, :, :1] -= deltaTime*self.coeff[2]* \
-                        self.fOld.get(self.neighbRk[2], self.neighbSide[2])
+                        self.fOld.getData(self.neighbRk[2], self.neighbSide[2])
 
   def checksum(self):
     return self.f.reduce(operator.add, 0.0, rootPe=0)

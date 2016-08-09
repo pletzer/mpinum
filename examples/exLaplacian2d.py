@@ -98,10 +98,10 @@ if soProc is None:
 # on the neighbouring processor.
 print('noProc = {0}, soProc = {1}, eaProc = {2}, weProc = = {3}'.format( \
     noProc, soProc, eaProc, weProc))
-weZData = zda.get(weProc, winID=(0, +1))
-eaZData = zda.get(eaProc, winID=(0, -1))
-soZData = zda.get(soProc, winID=(+1, 0))
-noZData = zda.get(noProc, winID=(-1, 0))
+weZData = zda.getData(weProc, winID=(0, +1))
+eaZData = zda.getData(eaProc, winID=(0, -1))
+soZData = zda.getData(soProc, winID=(+1, 0))
+noZData = zda.getData(noProc, winID=(-1, 0))
 
 # finish the operator
 weSlc = zda.getEllipsis(winID=(0, -1))

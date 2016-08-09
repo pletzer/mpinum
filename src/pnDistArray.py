@@ -93,6 +93,7 @@ def distArrayFactory(BaseClass):
             dataSrc = numpy.ones(self[slce].shape, self.dtyp) 
             # buffer for destination data
             dataDst = numpy.ones(self[slce].shape, self.dtyp)
+
             self.windows[winID] = {
                 'slice': slce,
                 'dataSrc': dataSrc,
@@ -100,7 +101,43 @@ def distArrayFactory(BaseClass):
                 'dataWindow': MPI.Win.Create(dataSrc, comm=self.comm),
                 }
 
-        def get(self, pe, winID):
+            if hasattr(self, 'mask'):
+                maskSrc = numpy.ones(self[slce].shape, numpy.bool_)
+                maskDst = numpy.ones(self[slce].shape, numpy.bool_)
+                iw = self.windows[winID]
+                iw['maskSrc'] = maskSrc
+                iw['maskDst'] = maskDst
+                iw['maskWindow'] = MPI.Win.Create(maskSrc, comm=self.comm)
+
+        def getMask(self, pe, winID):
+            """
+            Access remote mask (collective operation)
+            @param pe remote processing element, if None then no operation
+            @param winID remote window
+            @return mask array or None (if there is no mask)
+            @note this is a no operation if there os no mask attached to the data
+            """
+            if not self.windows.has_key('maskWindow'):
+                # no mask, no op
+                return None
+
+            iw = self.windows[winID]
+            slce = iw['slice']
+            maskSrc = iw['maskSrc']
+            maskDst = iw['maskDst']
+
+            # copy src mask into buffer
+            maskSrc[...] = self.mask[slce]
+
+            win = iw['maskWindow']
+            win.Fence()
+            if pe is not None:
+                win.Get( [maskDst, MPI.BYTE], pe )
+            win.Fence()
+
+            return maskDst
+
+        def getData(self, pe, winID):
             """
             Access remote data (collective operation)
             @param pe remote processing element, if None then no operation
@@ -183,34 +220,40 @@ def daOnes(shap, dtype=numpy.float):
     res[:] = 1
     return res
 
-def mdaArray(arry, dtype=numpy.float):
+def mdaArray(arry, dtype=numpy.float, mask=None):
     """
     Array constructor for masked distributed array
     @param arry numpy-like array
+    @param mask mask array (or None if all data elements are valid)
     """
     a = numpy.array(arry, dtype)
     res = MaskedDistArray(a.shape, a.dtype)
     res[:] = a # copy
+    res.mask = mask
     return res
 
-def mdaZeros(shap, dtype=numpy.float):
+def mdaZeros(shap, dtype=numpy.float, mask=None):
     """
     Zero constructor for masked distributed array
     @param shap the shape of the array
     @param dtype the numpy data type 
+    @param mask mask array (or None if all data elements are valid)
     """
     res = MaskedDistArray(shap, dtype)
     res[:] = 0
+    res.mask = mask
     return res
 
-def mdaOnes(shap, dtype=numpy.float):
+def mdaOnes(shap, dtype=numpy.float, mask=None):
     """
     One constructor for masked distributed array
     @param shap the shape of the array
     @param dtype the numpy data type 
+    @param mask mask array (or None if all data elements are valid)
     """
     res = MaskedDistArray(shap, dtype)
     res[:] = 1
+    res.mask = mask
     return res
 
 
@@ -237,9 +280,9 @@ def test():
 
     # fetch data
     if rk > 0:
-        daOtherEast = da.get(pe=rk-1, winID='east')
+        daOtherEast = da.getData(pe=rk-1, winID='east')
     else:
-        daOtherEast = da.get(pe=sz-1, winID='east')
+        daOtherEast = da.getData(pe=sz-1, winID='east')
 
     # check
     daLocalEast = da[ da.windows['east']['slice'] ]

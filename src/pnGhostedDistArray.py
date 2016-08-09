@@ -147,16 +147,16 @@ def test():
     for pe in range(sz):
         winIndex = (-1, 0)
         print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk, str(winIndex), pe), \
-              da.get(pe, winID=winIndex))
+              da.getData(pe, winID=winIndex))
         winIndex = (+1, 0)
         print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk, str(winIndex), pe), \
-              da.get(pe, winID=winIndex))
+              da.getData(pe, winID=winIndex))
         winIndex = (0, -1)
         print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk, str(winIndex), pe), \
-              da.get(pe, winID=winIndex))
+              da.getData(pe, winID=winIndex))
         winIndex = (0, +1)
         print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk, str(winIndex), pe), \
-              da.get(pe, winID=winIndex))
+              da.getData(pe, winID=winIndex))
 
     # to keep mpi4py quite
     da.free()
