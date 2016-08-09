@@ -83,6 +83,20 @@ def distArrayFactory(BaseClass):
             self.rk = self.comm.Get_rank()
             self.sz = self.comm.Get_size()
 
+        def getMPIRank(self):
+            """
+            Get the MPI rank of this process
+            @return rank
+            """
+            return self.rk
+
+        def getMPISize(self):
+            """
+            Get the MPI size (number of processes) of this communicator
+            @return rank
+            """
+            return self.sz
+
         def expose(self, slce, winID):
             """
             Collective operation to expose a sub-set of data
