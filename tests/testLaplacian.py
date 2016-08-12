@@ -185,6 +185,59 @@ class TestLaplacian(unittest.TestCase):
         print('test3d check sum = {}'.format(chksum))
         self.assertLessEqual(abs(chksum - -1584.0), 1.e-10)
 
+  def test3d_1domain(self):
+
+    n = 8
+
+    # global number of cells
+    ns = (n, n, n)
+
+    ndims = len(ns)
+
+    # global domain boundaries
+    xmins = numpy.array([0.0 for i in range(ndims)])
+    xmaxs = numpy.array([1.0 for i in range(ndims)])
+
+    # local cell centered coordinates
+    axes = []
+    hs = []
+    for i in range(ndims):
+        h = (xmaxs[i] - xmins[i]) / float(ns[i])
+        ax = xmins[i] + h*(numpy.arange(0, ns[i]) + 0.5)
+        hs.append(h)
+        axes.append(ax)
+
+    # set the input function
+    xx = numpy.zeros((ns[0], ns[1], ns[2]), numpy.float64)
+    yy = numpy.zeros((ns[0], ns[1], ns[2]), numpy.float64)
+    zz = numpy.zeros((ns[0], ns[1], ns[2]), numpy.float64)
+    for iLocal in range(ns[0]):
+      for jLocal in range(ns[1]):
+        for kLocal in range(ns[2]):
+          xx[iLocal, jLocal, kLocal] = axes[0][iLocal]
+          yy[iLocal, jLocal, kLocal] = axes[1][jLocal]
+          zz[iLocal, jLocal, kLocal] = axes[2][kLocal]
+
+    inp = 0.5 * xx * yy ** 2
+
+    out = -6.0 * inp
+
+    out[:-1, :, :] += 1.0 * inp[1:, :, :]
+    out[1:, :, :] += 1.0 * inp[:-1, :, :]
+
+    out[:, :-1, :] += 1.0 * inp[:, 1:, :]
+    out[:, 1:, :] += 1.0 * inp[:, :-1, :]
+
+    out[:, :, :-1] += 1.0 * inp[:, :, 1:]
+    out[:, :, 1:] += 1.0 * inp[:, :, :-1]
+
+    # divide by h^2
+    out /= hs[0]**2 # NEED TO ADAPT IF CELL IS DIFFERENT IN Y AND Z!
+
+    # check sum
+    chksum = numpy.sum(out.flat)
+    print('test3d_1domain sum = {}'.format(chksum))
+    self.assertLessEqual(abs(chksum - -1584.0), 1.e-10)
 
 if __name__ == '__main__': 
   print("") # Spacer  
