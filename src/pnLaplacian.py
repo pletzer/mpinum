@@ -86,9 +86,9 @@ class Laplacian:
         """
 
         # input dist array
-        inp = gdaZeros(localArray.shape, localArray.dtype)
-        # output dist array
-        out = gdaZeros(localArray.shape, localArray.dtype)
+        inp = gdaZeros(localArray.shape, localArray.dtype, numGhosts=1)
+        # output array
+        out = numpy.zeros(localArray.shape, localArray.dtype)
 
         # no displacement term
         weight = self.stencil[self.zeros]
@@ -116,8 +116,10 @@ class Laplacian:
             winId = self.winIds[disp]
             rk = self.neighRk[disp]
 
+            #print '*** disp = ', disp, ' weight = ', weight
+
             # remote fetch
             out[dstSlab] += weight * inp.getData(rk, winId)
 
-        return out[...]
+        return out
 
