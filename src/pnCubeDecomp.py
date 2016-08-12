@@ -54,6 +54,12 @@ class CubeDecomp:
         
         self.__computeDecomp()
 
+    def getNumDims(self):
+        """
+        Get the number of topological dimensions
+        """
+        return self.ndims
+
     def getDecomp(self):
         """
         Get the decomposition

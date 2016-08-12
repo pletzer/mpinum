@@ -8,3 +8,5 @@ from pnumpy.pnGhostedDistArray import GhostedDistArray, gdaZeros, gdaOnes, gdaAr
 from pnumpy.pnGhostedDistArray import GhostedMaskedDistArray, gmdaZeros, gmdaOnes, gmdaArray
 from pnumpy.pnMultiArrayIter import MultiArrayIter
 from pnumpy.pnCubeDecomp import CubeDecomp
+from pnumpy.pnPartition import Partition
+from pnumpy.pnLaplacian import Laplacian
