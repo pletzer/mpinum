@@ -70,8 +70,8 @@ class Laplacian:
                 negDisp = tuple(negDisp)
                 self.srcLocalDomains[disp] = self.domain.shift(disp).getSlice()
                 self.dstLocalDomains[disp] = self.domain.shift(negDisp).getSlice()
-                self.srcSlab[disp] = self.domain.extract(negDisp).getSlice()
-                self.dstSlab[disp] = self.domain.extract(disp).getSlice()
+                self.srcSlab[disp] = self.domain.extract(disp).getSlice()
+                self.dstSlab[disp] = self.domain.extract(negDisp).getSlice()
 
                 # assumes disp only contains -1, 0s, or 1
                 self.neighRk[disp] = decomp.getNeighborProc(myRank, disp, periodic=periodic)
@@ -134,7 +134,7 @@ def test1d():
     # MPI rank
     rk = MPI.COMM_WORLD.Get_rank()
 
-    n = 2
+    n = 8
 
     # global number of cells
     ns = (n,)
@@ -167,10 +167,10 @@ def test1d():
 
     # set the input function
     inp = 0.5 * axes[0]**2
-    print('inp = ' + str(inp))
+    print('[{0}] inp = {1}'.format(rk, str(inp)))
 
     out = lapl.apply(inp) / hs[0]**2
-    print('out = ' + str(out))
+    print('[{0}] out = {1}'.format(rk, str(out)))
 
 
 if __name__ == '__main__': 
