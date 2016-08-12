@@ -132,18 +132,41 @@ def test1d():
     # MPI rank
     rk = MPI.COMM_WORLD.Get_rank()
 
-    # domain decomp
-    n0 = 8
-    dc = CubeDecomp(sz, (n0,))
+    n = 8
+
+    # global number of cells
+    ns = (n,)
+
+    # domain decomposition
+    dc = CubeDecomp(sz, ns)
     if not dc.getDecomp():
         print('*** ERROR Invalid domain decomposition -- rerun with different sizes/number of procs')
         sys.exit(1)
+    ndims = dc.getNumDims()
 
-    lapl = Laplacian(dc, periodic=(True,))
-    ii = numpy.arange(0, n0) + 0.5
-    xx = ii/float(n0)
-    inp = 0.5 * xx**2
-    out = lapl.apply(inp)
+    # local start/end grid indices
+    slab = dc.getSlab(rk)
+
+    # global domain boundaries
+    xmins = numpy.array([0.0 for i in range(ndims)])
+    xmaxs = numpy.array([1.0 for i in range(ndims)])
+
+    # local cell centered coordinates
+    axes = []
+    hs = []
+    for i in range(ndims):
+        ibeg, iend = slab[i].start, slab[i].stop
+        h = (xmaxs[i] - xmins[i]) / float(ns[i])
+        ax = xmins[i] + h*(numpy.arange(ibeg, iend) + 0.5)
+        hs.append(h)
+        axes.append(ax)
+
+    lapl = Laplacian(dc, periodic=(False,))
+
+    # set the input function
+    inp = 0.5 * axes[0]**2
+
+    out = lapl.apply(inp) / hs[0]**2
     print(out)
 
 
