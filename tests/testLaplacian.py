@@ -109,7 +109,7 @@ class TestLaplacian(unittest.TestCase):
     inp = 0.5 * xx * yy ** 2
     #print('[{0}] inp = {1}'.format(self.rk, str(inp)))
 
-    out = lapl.apply(inp) / hs[0]**2
+    out = lapl.apply(inp) / hs[0]**2  # NEED TO ADJUST WHEN CELL SIZE IS DIFFERENT IN Y!
     #print('[{0}] out = {1}'.format(self.rk, str(out)))
 
     # check sum
@@ -118,6 +118,51 @@ class TestLaplacian(unittest.TestCase):
     if self.rk == 0: 
         print('test2d check sum = {}'.format(chksum))
         self.assertLessEqual(abs(chksum - -198.0), 1.e-10)
+
+  def test2d_1domain(self):
+
+    n = 8
+
+    # global number of cells
+    ns = (n, n)
+
+    ndims = len(ns)
+
+    # global domain boundaries
+    xmins = numpy.array([0.0 for i in range(ndims)])
+    xmaxs = numpy.array([1.0 for i in range(ndims)])
+
+    # local cell centered coordinates
+    axes = []
+    hs = []
+    for i in range(ndims):
+        h = (xmaxs[i] - xmins[i]) / float(ns[i])
+        ax = xmins[i] + h*(numpy.arange(0, ns[i]) + 0.5)
+        hs.append(h)
+        axes.append(ax)
+
+    # set the input function
+    xx = numpy.outer(axes[0], numpy.ones((ns[1],)))
+    yy = numpy.outer(numpy.ones((ns[0],)), axes[1])
+
+    inp = 0.5 * xx * yy ** 2
+    #print('inp = {}'.format(str(inp)))
+
+    out = -4.0 * inp
+
+    out[1:, :] += 1.0 * inp[:-1, :]
+    out[:-1, :] += 1.0 * inp[1:, :]
+
+    out[:, 1:] += 1.0 * inp[:, :-1]
+    out[:, :-1] += 1.0 * inp[:, 1:]
+
+    out /= hs[0]**2 # NEED TO ADJUST WHEN CELL SIZE IS DIFFERENT IN Y!
+    #print('out = {}'.format(str(out)))
+
+    # check sum
+    chksum = numpy.sum(out.flat)
+    print('test2d_1domain check sum = {}'.format(chksum))
+    self.assertLessEqual(abs(chksum - -198.0), 1.e-10)
 
   def test3d(self):
 
@@ -208,17 +253,14 @@ class TestLaplacian(unittest.TestCase):
         axes.append(ax)
 
     # set the input function
-    xx = numpy.zeros((ns[0], ns[1], ns[2]), numpy.float64)
-    yy = numpy.zeros((ns[0], ns[1], ns[2]), numpy.float64)
-    zz = numpy.zeros((ns[0], ns[1], ns[2]), numpy.float64)
-    for iLocal in range(ns[0]):
-      for jLocal in range(ns[1]):
-        for kLocal in range(ns[2]):
-          xx[iLocal, jLocal, kLocal] = axes[0][iLocal]
-          yy[iLocal, jLocal, kLocal] = axes[1][jLocal]
-          zz[iLocal, jLocal, kLocal] = axes[2][kLocal]
-
-    inp = 0.5 * xx * yy ** 2
+    inp = numpy.zeros((ns[0], ns[1], ns[2]), numpy.float64)
+    for i in range(ns[0]):
+      x = axes[0][i]
+      for j in range(ns[1]):
+        y = axes[1][j]
+        for k in range(ns[2]):
+          z = axes[2][k]
+          inp[i, j, k] = 0.5 * x * y ** 2
 
     out = -6.0 * inp
 
