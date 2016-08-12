@@ -104,9 +104,9 @@ def distArrayFactory(BaseClass):
             @param winID the data window ID
             """
             # buffer for source data
-            dataSrc = numpy.ones(self[slce].shape, self.dtyp) 
+            dataSrc = numpy.zeros(self[slce].shape, self.dtyp) 
             # buffer for destination data
-            dataDst = numpy.ones(self[slce].shape, self.dtyp)
+            dataDst = numpy.zeros(self[slce].shape, self.dtyp)
 
             self.windows[winID] = {
                 'slice': slce,

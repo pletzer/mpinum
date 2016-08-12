@@ -115,6 +115,8 @@ class Laplacian:
             dstSlab = self.dstSlab[disp]
             winId = self.winIds[disp]
             rk = self.neighRk[disp]
+
+            # remote fetch
             out[dstSlab] += weight * inp.getData(rk, winId)
 
         return out[...]
@@ -132,7 +134,7 @@ def test1d():
     # MPI rank
     rk = MPI.COMM_WORLD.Get_rank()
 
-    n = 8
+    n = 2
 
     # global number of cells
     ns = (n,)
@@ -165,9 +167,10 @@ def test1d():
 
     # set the input function
     inp = 0.5 * axes[0]**2
+    print('inp = ' + str(inp))
 
     out = lapl.apply(inp) / hs[0]**2
-    print(out)
+    print('out = ' + str(out))
 
 
 if __name__ == '__main__': 
