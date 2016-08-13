@@ -201,19 +201,7 @@ class TestLaplacian(unittest.TestCase):
         hs.append(h)
         axes.append(ax)
 
-    lapl = Laplacian(dc, periodic=(False, False, True))
-
-    # change the stencil
-    lapl.stencil[0, 0, 0] = -2.0
-
-    lapl.stencil[1, 0, 0] =  0.
-    lapl.stencil[-1, 0, 0] = 0.
-
-    lapl.stencil[0, 1, 0] = 0.
-    lapl.stencil[0, -1, 0] = 0.
-
-    lapl.stencil[0, 0, 1] = 1.
-    lapl.stencil[0, 0, -1] = 1.
+    lapl = Laplacian(dc, periodic=(False, False, False))
 
     # set the input function
     inp = numpy.zeros((iEnds[0] - iBegs[0], iEnds[1] - iBegs[1], iEnds[2] - iBegs[2]), numpy.float64)
@@ -228,10 +216,13 @@ class TestLaplacian(unittest.TestCase):
             z = axes[2][k]
             inp[i, j, k] = 0.5 * x * y**2
 
-    #print('[{0}] inp = {1}'.format(self.rk, str(inp)))
+    # check sum of input
+    localChkSum = numpy.sum(inp.flat)
+    chksum = numpy.sum(MPI.COMM_WORLD.gather(localChkSum, 0))
+    if self.rk == 0: 
+        print('test3d check sum of input = {}'.format(chksum))
 
-    out = lapl.apply(inp) / hs[0]**2 # NEED TO ADAPT IF CELL IS DIFFERENT IN Y AND Z
-    #print('[{0}] out = {1}'.format(self.rk, str(out)))
+    out = lapl.apply(inp) 
 
     # check sum
     localChkSum = numpy.sum(out.flat)
@@ -272,14 +263,16 @@ class TestLaplacian(unittest.TestCase):
           z = axes[2][k]
           inp[i, j, k] = 0.5 * x * y ** 2
 
+    print('check sum input: {0}'.format(numpy.sum(inp.flat)))
+
     stencil = {}
-    stencil[0, 0, 0] = -2.0
+    stencil[0, 0, 0] = -6.0
 
-    stencil[1, 0, 0] =  0.
-    stencil[-1, 0, 0] = 0.
+    stencil[1, 0, 0] =  1.
+    stencil[-1, 0, 0] = 1.
 
-    stencil[0, 1, 0] = 0.
-    stencil[0, -1, 0] = 0.
+    stencil[0, 1, 0] = 1.
+    stencil[0, -1, 0] = 1.
 
     stencil[0, 0, 1] = 1.
     stencil[0, 0, -1] = 1.
@@ -294,9 +287,6 @@ class TestLaplacian(unittest.TestCase):
 
     out[:, :, :-1] += stencil[0, 0, 1] * inp[:, :, 1:]
     out[:, :, 1:] += stencil[0, 0, -1] * inp[:, :, :-1]
-
-    # divide by h^2
-    out /= hs[0]**2 # NEED TO ADAPT IF CELL IS DIFFERENT IN Y AND Z!
 
     # check sum
     chksum = numpy.sum(out.flat)

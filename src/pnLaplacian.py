@@ -101,6 +101,7 @@ class Laplacian:
             # no communication required here
             srcDom = self.srcLocalDomains[disp]
             dstDom = self.dstLocalDomains[disp]
+
             out[dstDom] += weight * localArray[srcDom]
 
             #
@@ -115,8 +116,6 @@ class Laplacian:
             dstSlab = self.dstSlab[disp]
             winId = self.winIds[disp]
             rk = self.neighRk[disp]
-
-            #print '*** disp = ', disp, ' weight = ', weight
 
             # remote fetch
             out[dstSlab] += weight * inp.getData(rk, winId)
