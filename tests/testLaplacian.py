@@ -201,7 +201,7 @@ class TestLaplacian(unittest.TestCase):
         hs.append(h)
         axes.append(ax)
 
-    lapl = Laplacian(dc, periodic=(False, False, False))
+    lapl = Laplacian(dc, periodic=(False, False, True))
 
     # set the input function
     inp = numpy.zeros((iEnds[0] - iBegs[0], iEnds[1] - iBegs[1], iEnds[2] - iBegs[2]), numpy.float64)
@@ -229,7 +229,7 @@ class TestLaplacian(unittest.TestCase):
     chksum = numpy.sum(MPI.COMM_WORLD.gather(localChkSum, 0))
     if self.rk == 0: 
         print('test3d check sum = {}'.format(chksum))
-        #self.assertLessEqual(abs(chksum - -1584.0), 1.e-10)
+        self.assertLessEqual(abs(chksum - -24.75), 1.e-10)
 
   def test3d_1domain(self):
 
@@ -288,10 +288,14 @@ class TestLaplacian(unittest.TestCase):
     out[:, :, :-1] += stencil[0, 0, 1] * inp[:, :, 1:]
     out[:, :, 1:] += stencil[0, 0, -1] * inp[:, :, :-1]
 
+    # handle preiodic conditions in the z direction
+    out[:, :, -1] += stencil[0, 0, 1] * inp[:, :, 0]
+    out[:, :, 0] += stencil[0, 0, -1] * inp[:, :, -1]
+
     # check sum
     chksum = numpy.sum(out.flat)
     print('test3d_1domain sum = {}'.format(chksum))
-    #self.assertLessEqual(abs(chksum - -1584.0), 1.e-10)
+    self.assertLessEqual(abs(chksum - -24.75), 1.e-10)
 
 if __name__ == '__main__': 
   print("") # Spacer  
