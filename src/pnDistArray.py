@@ -131,7 +131,7 @@ def distArrayFactory(BaseClass):
             @return mask array or None (if there is no mask)
             @note this is a no operation if there os no mask attached to the data
             """
-            if not self.windows.has_key('maskWindow'):
+            if not 'maskWindow' in self.windows:
                 # no mask, no op
                 return None
 
