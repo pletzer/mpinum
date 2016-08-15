@@ -11,7 +11,7 @@ method. This can be used to access neighbor ghost data but is more
 flexible as it allows to access data from any process--not necessarily
 a neighboring one. pnumpy is designed to work seamlessly with numpy's 
 slicing operators ufunc, etc., making it easy to transition your code
-from using numpy arrays to pnumpy arrays.
+to a parallel computing environment.
 
 ## How to get pnumpy
 
@@ -60,6 +60,14 @@ mpiexec -n 4 python testDistArray.py
 
 ## How to use pnumpy
 
+To run script myScript.py in parallel use
+
+```python
+mpiexec -n numProcs python <myScript.py>
+```
+
+where numProcs is the number of processes.
+
 ### A lightweight extension to numpy arrays
 
 Think of pnumpy arrays as standard numpy arrays with additional data members and methods to access neighboring data. 
@@ -79,9 +87,9 @@ Note that slicing operations are with respect to local array indices.
 
 In the above, _numGhosts_ describes the thickness of the halo region, i.e. the slice of 
 data inside the array that can be accessed by other processes. A value of numGhosts = 1 means 
-the halo has depth of one, standard finite differencing stencils require numGhosts = 1. The 
-thicker the halo the more costly communication will be because more data will need to be copied 
-from on eprocess to another.
+the halo has depth of one. The thicker the halo the more costly communication will be because 
+more data will need to be copied 
+from one process to another.
 
 For a 2D array, the halo can be broken into four regions: 
 
@@ -90,7 +98,7 @@ For a 2D array, the halo can be broken into four regions:
  * da[:, :numGhosts] => south
  * da[:, -numGhosts:] => north
 
-(In n-dimensions there are 2n regions.) Pnumpy identifies each halo region
+(In n-dimensions there are 2n regions.) pnumpy identifies each halo region
  with a tuple: 
 
   * (-1, 0) => west
@@ -105,19 +113,19 @@ southData = da.getData(otherRk, winID=(0, -1))
 
 ### Using a regular domain decomposition
 
-The above will work for any domain decomposition, not necessarily a regular one. In the cases where a global array is split in 
+The above will work for any domain decomposition, not necessarily a regular one. In the case where a global array is split into
 uniform chunks of data, otherRk can be inferred from the local rank and an offset vector:
 
 ```python
 from pnumpy import CubeDecomp
 decomp = CubeDecomp(numProcs, dims)
 ...
-otherRk = decomp.getNeighborProc(self, da.getMyMPIRank(), offset=(0, 1), periodic=(True, False))
+otherRk = decomp.getNeighborProc(self, da.getMPIRank(), offset=(0, 1), periodic=(True, False))
 ```
 
 where numProcs is the number of processes, dims are the global array dimensions and periodic is a tuple of 
 True/False values indicating whether the domain is periodic or not. In the case where there is no neighbour rank (because the
-local da.getMyMPIRank() rank lies at the boundary of the domain), then getNeighborProc may return None. In this case getData will also return None. 
+local da.getMPIRank() rank lies at the boundary of the domain), then getNeighborProc may return None. In this case getData will also return None. 
 
 ### A very high level
 
