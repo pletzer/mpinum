@@ -65,7 +65,17 @@ for i in range(iEnd - iBeg):
 
 # compute the Laplacian
 lapl = pnumpy.Laplacian(dc, periodic=(True, True, True))
+time = MPI.Wtime()
 fout = lapl.apply(f)
+time = MPI.Wtime() - time
+
+times = MPI.COMM_WORLD.gather(time, 0)
+if rk == 0:
+    minTime = min(times)
+    avgTime = numpy.sum(times)/float(sz)
+    maxTime = max(times)
+    print('Min/avg/max times: {0:.2f}/{1:.2f}/{2:.2f} s'.format(
+           minTime, avgTime, maxTime))
 
 # check
 localChkSum = fout.sum()
