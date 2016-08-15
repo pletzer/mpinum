@@ -74,16 +74,29 @@ da = gdaZeros((4, 5), numpy.float32, numGhosts=1)
 The above creates a 4 x 5 float32 array filled with zeros -- the syntax should be familiar to anyone using 
 numpy arrays. 
 
-All numpy operations apply to pnumpy distributed arrays with no change and this includes slicing. Therefore, slicing operations are with respect to local array indices.
+All numpy operations apply to pnumpy distributed arrays with no change and this includes slicing. 
+Note that slicing operations are with respect to local array indices.
 
-In the above, numGhosts describes the thickness of the halo region, i.e. the slice of 
+In the above, _numGhosts_ describes the thickness of the halo region, i.e. the slice of 
 data inside the array that can be accessed by other processes. A value of numGhosts = 1 means 
-the halo has depth of one, standard finite differencing stencils require numGhosts = 1.
+the halo has depth of one, standard finite differencing stencils require numGhosts = 1. The 
+thicker the halo the more costly communication will be because more data will need to be copied 
+from on eprocess to another.
 
 For a 2D array, the halo can be broken into four regions: 
-da[:numGhosts, :], da[-numGhosts:, :], da[:, :numGhosts] and da[:, -numGhosts:].
+
+ * da[:numGhosts, :] => west
+ * da[-numGhosts:, :] => east
+ * da[:, :numGhosts] => south
+ * da[:, -numGhosts:] => north
+
 (In n-dimensions there are 2n regions.) Pnumpy identifies each halo region
- with a tuple: (1, 0) for east, (-1, 0) for west, (0, 1) for north and (0, -1) for south. 
+ with a tuple: 
+
+  * (-1, 0) => west
+  * (1, 0) => east
+  * (0, -1) => south
+  * (0, 1) => north
 
 To access data on the south region of remote process otherRk, use
 ```python
@@ -115,7 +128,7 @@ from pnumpy import Laplacian
 lapl = Laplacian(decomp, periodic=(True, False))
 ```
 
-Applying the Laplacian stencil to any numpy-like array inp then involves:
+Applying the Laplacian stencil to any numpy-like array _inp_ then simply involves:
 ```python
 out = lapl.apply(inp)
 ```
