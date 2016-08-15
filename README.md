@@ -44,9 +44,10 @@ Alternatively you can use
 pip install pnumpy
 ```
 
-or, if you're using Anaconda, 
-```python
-conda install pnumpy
+or
+
+```python 
+pip install pnumpy --user
 ```
 
 ## How to test pnumpy
