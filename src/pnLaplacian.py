@@ -120,5 +120,8 @@ class Laplacian:
             # remote fetch
             out[dstSlab] += weight * inp.getData(rk, winId)
 
+        # some implementations require this
+        inp.free()
+        
         return out
 

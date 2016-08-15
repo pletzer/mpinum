@@ -1,3 +1,6 @@
+
+from __future__ import print_function
+
 import pnumpy
 from pnumpy import CubeDecomp
 import sys
