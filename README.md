@@ -63,6 +63,7 @@ mpiexec -n 4 python testDistArray.py
 ### A lightweight extension to numpy arrays
 
 Think of pnumpy arrays as standard numpy arrays with additional data members and methods to access neighboring data. 
+
 To create a ghosted distributed array (gda) use:
 
 ```python
@@ -70,14 +71,10 @@ from pnumpy import gdaZeros
 da = gdaZeros((4, 5), numpy.float32, numGhosts=1)
 ```
 
-The above creates a 4 x 5 float32 array -- the syntax should be familiar to anyone using 
+The above creates a 4 x 5 float32 array filled with zeros -- the syntax should be familiar to anyone using 
 numpy arrays. 
 
-Pnumpy distributed arrays are standard arrays except for additional methods and the fact 
-that each MPI process holds its own data. As such, all numpy operations 
-apply to pnumpy ghosted distributed arrays with no change and this includes slicing.
-
-All slicing operations are with respect to the local array indices.
+All numpy operations apply to pnumpy distributed arrays with no change and this includes slicing. Therefore, slicing operations are with respect to local array indices.
 
 In the above, numGhosts describes the thickness of the halo region, i.e. the slice of 
 data inside the array that can be accessed by other processes. A value of numGhosts = 1 means 
