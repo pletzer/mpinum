@@ -4,7 +4,7 @@ from setuptools import setup
 import sys
 
 setup(name = 'pnumpy',
-      version = '1.3.0',
+      version = '1.3.1',
       description = 'A very lightweight implementation of distributed arrays',
       author = 'Alexander Pletzer',
       author_email = 'alexander@gokliya.net',
