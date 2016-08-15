@@ -67,4 +67,10 @@ for i in range(iEnd - iBeg):
 lapl = pnumpy.Laplacian(dc, periodic=(True, True, True))
 fout = lapl.apply(f)
 
+# check
+localChkSum = fout.flat.sum()
+chksum = numpy.sum(MPI.COMM_WORLD.gather(localChkSum, 0))
+if rk == 0: 
+    print('check sum = {}'.format(chksum))
+
 
