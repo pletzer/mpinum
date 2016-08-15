@@ -13,7 +13,12 @@ rk = MPI.COMM_WORLD.Get_rank()
 sz = MPI.COMM_WORLD.Get_size()
 
 # domain sizes
-nx, ny, nz = 16, 16, 16
+n = 128
+if len(sys.argv) > 1: 
+    n = int(sys.argv[1])
+nx, ny, nz = n, n, n
+if rk == 0:
+    print('Number of cells nx, ny, nz = {0}, {1}, {2}\n'.format(nx, ny, nz))
 
 # domain sizes
 xMin, xMax = 0.0, 1.0
@@ -36,6 +41,8 @@ if not dc.getDecomp():
 
 # number of procs in each direction
 npx, npy, npz = dc.getDecomp()
+if rk == 0:
+    print('Number of procs in x, y, z = {0}, {1}, {2}\n'.format(npx, npy, npz))
 
 # list of slices
 slab = dc.getSlab(rk)
