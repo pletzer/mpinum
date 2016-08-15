@@ -25,7 +25,8 @@ pnumpy requires:
 
  * python 2.7 or 3.5
  * numpy, e.g. 1.10
- * mpi4py, e.g. 2.0.0 (requires MPI library to be installed)
+ * MPI library (e.g. MPICH2 1.4.1p1 that comes with Anaconda)
+ * mpi4py, e.g. 2.0.0
 
 
 ```bash
@@ -51,37 +52,63 @@ mpiexec -n 4 python testDistArray.py
 
 ### A lightweight extension to numpy arrays
 
-Think of numpy arrays with additional data members and methods to access neighboring data. To create a ghosted distributed array (gda):
+Think of numpy arrays with additional data members and methods to access neighboring data. 
+To create a ghosted distributed array (gda) use:
 
 ```python
 from pnumpy import gdaZeros
-
-da = gdaZeros( (4, 5), numpy.float32, numGhosts=1 )
+da = gdaZeros((4, 5), numpy.float32, numGhosts=1)
 ```
 
-The above syntax should be familiar to anyone using numpy arrays. Each MPI process will get its own version of the array. Note that indexing is local to the array stored on a given process. This means that da[0, 0] will the first element on 
-that process and da[-1, :] will the last row (following the usual numpy indexing rule).
+The above creates a 4 x 5 float32 array -- the syntax should be familiar to anyone using 
+numpy arrays. 
 
-It also means that pnumpy pnumpy does not assume a domain decomposition. The relationship between the arrays stored on different processes can be arbotrary, not necessarily a regular domain decomposition. 
+Pnumpy distributed arrays are standard arrays except for additional methods and the fact 
+that each MPI process holds its own data. As such, all numpy operations 
+apply to pnumpy ghosted distributed arrays with no change and this includes slicing.
 
-The data stored on each process can be set using indexing, slicing and ellipses. For instance:
+All slicing operations are with respect to the local array indices.
 
+In the above, numGhosts describes the thickness of the halo region, i.e. the slice of 
+data inside the array that can be accessed by other processes. A value of numGhosts = 1 means 
+the halo has depth of one, standard finite differencing stencils require numGhosts = 1.
+
+For a 2D array, the halo can be broken into four regions: 
+da[:numGhosts, :], da[-numGhosts:, :], da[:, :numGhosts] and da[:, -numGhosts:].
+(In n-dimensions there are 2n regions.) Pnumpy identifies each halo region
+ with a tuple: (1, 0) for east, (-1, 0) for west, (0, 1) for north and (0, -1) for south. 
+
+To access data on the south region of remote process otherRk, use
 ```python
-rk = da.getMPIRank()
-da[...] = 100 * rk
-``` 
-
-Option numGhosts describes the thickness of the halo region, i.e. the slice of data inside the array that can be accessed 
-by neighboring processes. numGhosts = 1 means that the halo has depth of one. For a 2D array (as in this case), the halo 
-can be broken into four slices: da[0, :], da[-1, :], da[:, 0] and da[:, -1] representing the west, east, south and north
-sides of the array. Because the terminology of north, east, etc. does not extend to n-dimensional arrays, pnumpy denotes 
-each side by a tuple (1, 0) for north, (0, 1) for east, (-1, 0) for south and (0, -1) for west. 
-
-Any process can fetch the ghost data stored on another process (not necessarily the neighbor one) using:
-
-```python
-otherData = da.getData(otherMPIRank, side=(0, -1))
+southData = da.getData(otherRk, winID=(0, -1))
 ```
 
-where otherMPIRank is the other process's MPI rank. Note that this is a collective operation -- all ranks are involved. 
-Passing None in place of otherMPIRank is a no-operation -- this is useful if some processes don't have a neighbor.
+### Using a regular domain decomposition
+
+The above will work for any domain decomposition, not necessarily a regular one. In the cases where a global array is split in 
+uniform chunks of data, otherRk can be inferred from the local rank and an offset vector:
+
+```python
+from pnumpy import CubeDecomp
+decomp = CubeDecomp(numProcs, dims)
+...
+otherRk = decomp.getNeighborProc(self, da.getMyMPIRank(), offset=(0, 1), periodic=(True, False))
+```
+
+where numProcs is the number of processes, dims are the global array dimensions and periodic is a tuple of 
+True/False values indicating whether the domain is periodic or not. In the case where there is no neighbour rank (because the
+local da.getMyMPIRank() rank lies at the boundary of the domain), then getNeighborProc may return None. In this case getData will also return None. 
+
+### A very high level
+
+For the Laplacian stencil, one may consider using 
+
+```python
+from pnumpy import Laplacian
+lapl = Laplacian(decomp, periodic=(True, False))
+```
+
+Applying the Laplacian stencil to any numpy-like array inp then involves:
+```python
+out = lapl.apply(inp)
+```
