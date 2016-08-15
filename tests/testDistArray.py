@@ -142,9 +142,9 @@ class TestDistArray(unittest.TestCase):
         print('leftData for rank %d = %s' % (rk, str(leftData)))
         # check
         if leftRk < rk:
-            self.assertEqual(leftData[0], da[-1] - 100)
+            self.assertEqual(leftData[0], False)
         else:
-            self.assertEqual(leftData[0], da[-1] + 100*(sz-1))
+            self.assertEqual(leftData[0], False)
         # free
         da.free()
 
