@@ -62,7 +62,7 @@ mpiexec -n 4 python testDistArray.py
 
 ### A lightweight extension to numpy arrays
 
-Think of numpy arrays with additional data members and methods to access neighboring data. 
+Think of pnumpy arrays as standard numpy arrays with additional data members and methods to access neighboring data. 
 To create a ghosted distributed array (gda) use:
 
 ```python
