@@ -16,9 +16,16 @@ sz = MPI.COMM_WORLD.Get_size()
 n = 128
 if len(sys.argv) > 1: 
     n = int(sys.argv[1])
+
+# numbe rof times the Laplacian is applied
+nTimes = 1
+if len(sys.argv) > 2: 
+    nTimes = int(sys.argv[2])    
+
 nx, ny, nz = n, n, n
 if rk == 0:
-    print('Number of cells nx, ny, nz = {0}, {1}, {2}\n'.format(nx, ny, nz))
+    print('Number of cells nx, ny, nz = {0}, {1}, {2}'.format(nx, ny, nz))
+    print('Number of times Laplacian operator is applied = {0}'.format(nTimes))
 
 # domain sizes
 xMin, xMax = 0.0, 1.0
@@ -42,7 +49,7 @@ if not dc.getDecomp():
 # number of procs in each direction
 npx, npy, npz = dc.getDecomp()
 if rk == 0:
-    print('Number of procs in x, y, z = {0}, {1}, {2}\n'.format(npx, npy, npz))
+    print('Number of procs in x, y, z = {0}, {1}, {2}'.format(npx, npy, npz))
 
 # list of slices
 slab = dc.getSlab(rk)
@@ -66,8 +73,13 @@ for i in range(iEnd - iBeg):
 # compute the Laplacian
 lapl = pnumpy.Laplacian(dc, periodic=(True, True, True))
 time = MPI.Wtime()
-fout = lapl.apply(f)
+for i in range(nTimes):
+    if rk == 0:
+        print('.', end='')
+    fout = lapl.apply(f)
 time = MPI.Wtime() - time
+if rk == 0:
+    print('')
 
 times = MPI.COMM_WORLD.gather(time, 0)
 if rk == 0:
