@@ -39,6 +39,16 @@ or, if you need root access,
 sudo python setup.py install
 ```
 
+Alternatively you can use 
+```python 
+pip install pnumpy
+```
+
+or, if you're using Anaconda, 
+```python
+conda install pnumpy
+```
+
 ## How to test pnumpy
 
 Run any file under tests/, e.g.
