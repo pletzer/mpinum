@@ -5,15 +5,7 @@ import numpy
 from mpi4py import MPI
 
 """
-Apply the finite difference Laplacian operator
-
-This code is provided with the hope that it will be useful. 
-No guarantee is provided whatsoever. Use at your own risk.
-
-See LICENSE.txt for conditions of use. 
-
-Alex Pletzer (2012)
-$Id: exLaplacian2d.py 25 2014-02-16 19:50:59Z pletzer $
+Apply the finite difference Laplacian operator in 2d
 """
 
 # local rank and number of procs
@@ -24,8 +16,8 @@ sz = MPI.COMM_WORLD.Get_size()
 nx, ny = 12, 36
 
 # domain sizes
-xMin, xMax = 0.0, 0.0
-yMin, yMax = 1.0, 1.0
+xMin, xMax = 0.0, 1.0
+yMin, yMax = 0.0, 1.0
 
 dx, dy = (xMax - xMin)/float(nx), (yMax - yMin)/float(ny)
 
