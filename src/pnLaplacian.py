@@ -1,15 +1,14 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 """
 Apply Laplacian stencil to distributed array data
 """
 
-import copy
-
 # external dependencies
 from mpi4py import MPI
 import numpy
-from pnumpy import gdaZeros, gmdaZeros, Partition
+from pnumpy import gdaZeros, Partition
+
 
 class Laplacian:
 
@@ -59,24 +58,29 @@ class Laplacian:
         # the window Ids
         self.winIds = {}
 
-        # the neighbor rank 
+        # the neighbor rank
         self.neighRk = {}
 
         for drect in range(self.ndims):
             for pm in (-1, 1):
-                disp = [0] * self.ndims; disp[drect] = pm
-                negDisp = [0] * self.ndims; negDisp[drect] = -pm
+                disp = [0] * self.ndims
+                disp[drect] = pm
                 disp = tuple(disp)
-                negDisp = tuple(negDisp)
+                # negative displacements
+                nisp = [0] * self.ndims
+                nisp[drect] = -pm
+                nisp = tuple(nisp)
                 self.srcLocalDomains[disp] = self.domain.shift(disp).getSlice()
-                self.dstLocalDomains[disp] = self.domain.shift(negDisp).getSlice()
+                self.dstLocalDomains[disp] = self.domain.shift(nisp).getSlice()
                 self.srcSlab[disp] = self.domain.extract(disp).getSlice()
-                self.dstSlab[disp] = self.domain.extract(negDisp).getSlice()
+                self.dstSlab[disp] = self.domain.extract(nisp).getSlice()
 
                 # assumes disp only contains -1, 0s, or 1
-                self.neighRk[disp] = decomp.getNeighborProc(myRank, disp, periodic=periodic)
+                self.neighRk[disp] = decomp.getNeighborProc(myRank,
+                                                            disp,
+                                                            periodic=periodic)
 
-                self.winIds[disp] = negDisp
+                self.winIds[disp] = nisp
 
     def apply(self, localArray):
         """
@@ -110,7 +114,8 @@ class Laplacian:
 
             # set the ghost values
             srcSlab = self.srcSlab[disp]
-            inp[srcSlab] = localArray[srcSlab] # copy
+            # copy
+            inp[srcSlab] = localArray[srcSlab]
 
             # send over to local process
             dstSlab = self.dstSlab[disp]
@@ -122,6 +127,5 @@ class Laplacian:
 
         # some implementations require this
         inp.free()
-        
-        return out
 
+        return out
