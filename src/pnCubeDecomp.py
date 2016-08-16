@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 """
 Muti-dimensional domain decomposition.
@@ -7,8 +7,8 @@ Muti-dimensional domain decomposition.
 # standard modules
 import operator
 from functools import reduce
-import pnumpy
 from pnumpy.pnMultiArrayIter import MultiArrayIter
+
 
 def getPrimeFactors(n):
     """
@@ -22,7 +22,8 @@ def getPrimeFactors(n):
     for k in range(2, n2 + 1):
         if (n // k)*k == n:
             lo.append(k)
-    return lo + [n,]
+    return lo + [n, ]
+
 
 class CubeDecomp:
 
@@ -51,7 +52,7 @@ class CubeDecomp:
 
         # list of valid number of procs
         self.validProcs = []
-        
+
         self.__computeDecomp()
 
     def getNumDims(self):
@@ -63,7 +64,7 @@ class CubeDecomp:
     def getDecomp(self):
         """
         Get the decomposition
-        @return list of number of procs per axis, or None if 
+        @return list of number of procs per axis, or None if
         no decomp exists for this number of processors
         """
         return self.decomp
@@ -81,10 +82,10 @@ class CubeDecomp:
 
     def getNeighborProc(self, proc, offset, periodic=None):
         """
-        Get the neighbor to a processor 
+        Get the neighbor to a processor
         @param proc the reference processor rank
         @param offset displacement, e.g. (1, 0) for north, (0, -1) for west,...
-        @param periodic boolean list of True/False values, True if axis is 
+        @param periodic boolean list of True/False values, True if axis is
                         periodic, False otherwise
         @note will return None if there is no neighbor
         """
@@ -93,8 +94,8 @@ class CubeDecomp:
             # no decomp, just exit
             return None
 
-        inds = [self.mit.getIndicesFromBigIndex(proc)[d] + offset[d] \
-                    for d in range(self.ndims)]
+        inds = [self.mit.getIndicesFromBigIndex(proc)[d] + offset[d]
+                for d in range(self.ndims)]
 
         if periodic is not None and self.decomp is not None:
             # apply modulo operation on periodic axes
@@ -109,19 +110,19 @@ class CubeDecomp:
 
     def __computeDecomp(self):
         """
-        Compute optimal dedomposition, each sub-domain has the 
-        same volume in index space. 
+        Compute optimal dedomposition, each sub-domain has the
+        same volume in index space.
         @return list if successful, empty list if not successful
         """
         primeNumbers = [getPrimeFactors(d) for d in self.globalDims]
-        
+
         ns = [len(pns) for pns in primeNumbers]
         validDecomps = []
         self.validProcs = []
         for it in MultiArrayIter(ns):
             inds = it.getIndices()
             decomp = [primeNumbers[d][inds[d]] for d in range(self.ndims)]
-            self.validProcs.append( reduce(operator.mul, decomp, 1) )
+            self.validProcs.append(reduce(operator.mul, decomp, 1))
             if reduce(operator.mul, decomp, 1) == self.nprocs:
                 validDecomps.append(decomp)
 
@@ -154,18 +155,20 @@ class CubeDecomp:
         self.decomp = bestDecomp
 
         # ok, we have a valid decomp, now build the sub-domain iterator
-        self.mit = MultiArrayIter(self.decomp, rowMajor = self.rowMajor)
+        self.mit = MultiArrayIter(self.decomp, rowMajor=self.rowMajor)
 
         # fill in the proc to index set map
         procId = 0
         self.proc2IndexSet = {}
-        numCellsPerProc = [self.globalDims[d]//self.decomp[d] \
-                               for d in range(self.ndims)]
+        numCellsPerProc = [self.globalDims[d]//self.decomp[d]
+                           for d in range(self.ndims)]
         for it in self.mit:
             nps = it.getIndices()
-            self.proc2IndexSet[procId] = [slice(nps[d]*numCellsPerProc[d], \
-                                               (nps[d] + 1)*numCellsPerProc[d]) \
-                                              for d in range(self.ndims)]
+            self.proc2IndexSet[procId] = []
+            for d in range(self.ndims):
+                sbeg = nps[d]*numCellsPerProc[d]
+                send = (nps[d] + 1)*numCellsPerProc[d]
+                self.proc2IndexSet[procId].append(slice(sbeg, send))
             procId += 1
 
     def getNumberOfValidProcs(self):
@@ -174,26 +177,26 @@ class CubeDecomp:
         @return number
         """
         return self.validProcs
-                
-        
+
 ######################################################################
+
 
 def test():
 
     dims = (46, 72)
-    ndims = len(dims)
     offsetN = (1, 0)
     offsetE = (0, 1)
     offsetS = (-1, 0)
     offsetW = (0, -1)
-    
+
     for nprocs in 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 18:
-        d = CubeDecomp(nprocs = nprocs, dims = dims)
+        d = CubeDecomp(nprocs=nprocs, dims=dims)
         if nprocs == 1:
-            print('valid prcessor counts: {0}'.format(d.getNumberOfValidProcs()))
+            print('valid prcessor counts: {0}'.format(
+                d.getNumberOfValidProcs()))
         print('nprocs = {0} decomp: {1}'.format(nprocs, d.getDecomp()))
         for procId in range(nprocs):
-            print('[{0}] start/end indices {1}: '.format( \
+            print('[{0}] start/end indices {1}: '.format(
                        procId, d.getSlab(procId)))
             procN = d.getNeighborProc(procId, offsetN)
             procE = d.getNeighborProc(procId, offsetE)
@@ -202,6 +205,6 @@ def test():
             print('      {0}     '.format(procN))
             print('{0}         {0}'.format(procW, procE))
             print('      {0}     '.format(procS))
-    
+
 if __name__ == '__main__':
     test()
