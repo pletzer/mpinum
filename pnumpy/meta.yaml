@@ -3,9 +3,9 @@ package:
   version: "1.3.3"
 
 source:
-  fn: pnumpy-1.3.3.tar.gz
-  url: https://pypi.python.org/packages/13/a6/dc35440cddd4642264b2584f2c32f81c296bb821ee6532fab3184392baa8/pnumpy-1.3.3.tar.gz
-  md5: af477b66f74aa8282e48631ca3771bf4
+  fn: pnumpy-1.3.4.tar.gz
+  url: https://pypi.python.org/packages/21/2b/ab5ece8ba23289bd00dd880e22fa545b1322f8f486d668f8c0e55d8c8f5a/pnumpy-1.3.4.tar.gz
+  md5: b8225fbe9c08647a974c059c0eb6ad53
 #  patches:
    # List any patch files here
    # - fix.patch
