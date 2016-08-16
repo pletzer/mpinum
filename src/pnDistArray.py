@@ -147,10 +147,10 @@ def distArrayFactory(BaseClass):
             maskSrc[...] = self.mask[slce]
 
             win = iw['maskWindow']
-            win.Fence()
+            win.Fence(MPI.MODE_NOPUT | MPI.MODE_NOPRECEDE)
             if pe is not None:
                 win.Get([maskDst, MPI.BYTE], pe)
-            win.Fence()
+            win.Fence(MPI.MODE_NOSUCCEED)
 
             return maskDst
 
