@@ -1,17 +1,16 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 """
 Distributed arrays
 """
 
 # standard imports
-import copy
 import functools
 
 # external dependencies
 import numpy
 from mpi4py import MPI
-from functools import reduce
+
 
 def distArrayFactory(BaseClass):
     """
@@ -22,9 +21,9 @@ def distArrayFactory(BaseClass):
 
     class DistArrayAny(BaseClass):
         """
-        Distributed array. Each process owns data and can expose a subset 
-        of the data to other processes. These are known as windows. Any 
-        number of windows can be exposed and the data of windows can be 
+        Distributed array. Each process owns data and can expose a subset
+        of the data to other processes. These are known as windows. Any
+        number of windows can be exposed and the data of windows can be
         overlapping. Any process can access exposed windows from any other
         process. This relies on MPI-2 one-sided get communication.
         """
@@ -39,11 +38,14 @@ def distArrayFactory(BaseClass):
             @param dtyp numpy type
             """
 
-            self.comm = MPI.COMM_WORLD # default communicator
-            self.windows = {}          # winID: {'slice': slce,
-                                       #         'dataSrc': dataSrc,
-                                       #         'dataDst': dataDst,
-                                       #         'window': window}
+            # default communicator
+            self.comm = MPI.COMM_WORLD
+
+            # winID: {'slice': slce,
+            #         'dataSrc': dataSrc,
+            #         'dataDst': dataDst,
+            #         'window': window}
+            self.windows = {}
 
             # the type of data
             self.dtyp = dtyp
@@ -54,7 +56,7 @@ def distArrayFactory(BaseClass):
             # number of processes
             self.sz = self.comm.Get_size()
 
-            # mapping of numpy data types to MPI data types, 
+            # mapping of numpy data types to MPI data types,
             # assumes that the data are of some numpy variant
             self.dtypMPI = None
             if dtyp == numpy.float64:
@@ -104,7 +106,7 @@ def distArrayFactory(BaseClass):
             @param winID the data window ID
             """
             # buffer for source data
-            dataSrc = numpy.zeros(self[slce].shape, self.dtyp) 
+            dataSrc = numpy.zeros(self[slce].shape, self.dtyp)
             # buffer for destination data
             dataDst = numpy.zeros(self[slce].shape, self.dtyp)
 
@@ -129,9 +131,10 @@ def distArrayFactory(BaseClass):
             @param pe remote processing element, if None then no operation
             @param winID remote window
             @return mask array or None (if there is no mask)
-            @note this is a no operation if there os no mask attached to the data
+            @note this is a no operation if there is no mask
+            attached to the data
             """
-            if not 'maskWindow' in self.windows:
+            if 'maskWindow' not in self.windows:
                 # no mask, no op
                 return None
 
@@ -146,7 +149,7 @@ def distArrayFactory(BaseClass):
             win = iw['maskWindow']
             win.Fence()
             if pe is not None:
-                win.Get( [maskDst, MPI.BYTE], pe )
+                win.Get([maskDst, MPI.BYTE], pe)
             win.Fence()
 
             return maskDst
@@ -169,7 +172,7 @@ def distArrayFactory(BaseClass):
             win = iw['dataWindow']
             win.Fence()
             if pe is not None:
-                win.Get( [dataDst, self.dtypMPI], pe )
+                win.Get([dataDst, self.dtypMPI], pe)
             win.Fence()
 
             return dataDst
@@ -204,6 +207,7 @@ def distArrayFactory(BaseClass):
 DistArray = distArrayFactory(numpy.ndarray)
 MaskedDistArray = distArrayFactory(numpy.ma.masked_array)
 
+
 #
 # Distributed array static constructors
 #
@@ -214,31 +218,34 @@ def daArray(arry, dtype=numpy.float):
     """
     a = numpy.array(arry, dtype)
     res = DistArray(a.shape, a.dtype)
-    res[:] = a # copy
+    res[:] = a
     return res
+
 
 def daZeros(shap, dtype=numpy.float):
     """
     Zero constructor for numpy distributed array
     @param shap the shape of the array
-    @param dtype the numpy data type 
+    @param dtype the numpy data type
     """
     res = DistArray(shap, dtype)
     res[:] = 0
     return res
 
+
 def daOnes(shap, dtype=numpy.float):
     """
     One constructor for numpy distributed array
     @param shap the shape of the array
-    @param dtype the numpy data type 
+    @param dtype the numpy data type
     """
     res = DistArray(shap, dtype)
     res[:] = 1
     return res
 
+
 #
-# Masked distributed array static constructors 
+# Masked distributed array static constructors
 #
 def mdaArray(arry, dtype=numpy.float, mask=None):
     """
@@ -248,15 +255,16 @@ def mdaArray(arry, dtype=numpy.float, mask=None):
     """
     a = numpy.array(arry, dtype)
     res = MaskedDistArray(a.shape, a.dtype)
-    res[:] = a # copy
+    res[:] = a
     res.mask = mask
     return res
+
 
 def mdaZeros(shap, dtype=numpy.float, mask=None):
     """
     Zero constructor for masked distributed array
     @param shap the shape of the array
-    @param dtype the numpy data type 
+    @param dtype the numpy data type
     @param mask mask array (or None if all data elements are valid)
     """
     res = MaskedDistArray(shap, dtype)
@@ -264,11 +272,12 @@ def mdaZeros(shap, dtype=numpy.float, mask=None):
     res.mask = mask
     return res
 
+
 def mdaOnes(shap, dtype=numpy.float, mask=None):
     """
     One constructor for masked distributed array
     @param shap the shape of the array
-    @param dtype the numpy data type 
+    @param dtype the numpy data type
     @param mask mask array (or None if all data elements are valid)
     """
     res = MaskedDistArray(shap, dtype)
@@ -284,19 +293,20 @@ def test():
     comm = MPI.COMM_WORLD
     rk = comm.Get_rank()
     sz = comm.Get_size()
-    
+
     # create local data container
     n, m = 3, 4
-    data = numpy.reshape(numpy.array( [rk*100.0 + i for i in range(n*m) ] ), (n,m))
+    data = numpy.reshape(numpy.array([rk*100.0 + i for i in range(n*m)]),
+                         (n, m))
 
     # create dist array
     da = DistArray(data.shape, data.dtype)
-    
+
     # load the data
     da[:] = data
 
     # expose data to other pes
-    da.expose( (slice(None, None,), slice(-1, None,)), winID='east' )
+    da.expose((slice(None, None,), slice(-1, None,)), winID='east')
 
     # fetch data
     if rk > 0:
@@ -305,24 +315,34 @@ def test():
         daOtherEast = da.getData(pe=sz-1, winID='east')
 
     # check
-    daLocalEast = da[ da.windows['east']['slice'] ]
+    daLocalEast = da[da.windows['east']['slice']]
     diff = daLocalEast - daOtherEast
     if rk > 0:
         try:
-            assert( numpy.all( diff == 100 ) )
+            assert(numpy.all(diff == 100))
             print('[{0}]...OK'.format(rk))
-        except: 
-            print('[{0}] daLocalEast={1}\ndaOtherEast={2}'.format(rk, str(daLocalEast), str(daOtherEast)))
+        except:
+            sLocal = str(daLocalEast)
+            sOther = str(daOtherEast)
+            print('[{0}] daLocalEast={1}\ndaOtherEast={2}'.format(
+                                                                  rk,
+                                                                  sLocal,
+                                                                  sOther))
             print('error: {0}'.format(numpy.sum(diff - 100)))
     else:
         try:
-            assert( numpy.all( diff == -100*(sz-1) ) )
+            assert(numpy.all(diff == -100*(sz-1)))
             print('[{0}]...OK'.format(rk))
         except:
-            print('[{0}] daLocalEast={1}\ndaOtherEast={2}'.format(rk, str(daLocalEast), str(daOtherEast)))
-            print('error: {0}'.format(numpy.sum( diff + 100*(sz-1) )))
+            sLocal = str(daLocalEast)
+            sOther = str(daOtherEast)
+            print('[{0}] daLocalEast={1}\ndaOtherEast={2}'.format(rk,
+                                                                  sLocal,
+                                                                  sOther))
+            print('error: {0}'.format(numpy.sum(diff + 100*(sz-1))))
 
     # delete windows
     da.free()
 
-if __name__ == '__main__': test()
+if __name__ == '__main__':
+    test()
