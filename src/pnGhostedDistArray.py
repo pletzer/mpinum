@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 """
 Distributed array class with ghosts
@@ -7,6 +7,7 @@ Distributed array class with ghosts
 import numpy
 from pnumpy import DistArray, MaskedDistArray
 
+
 def ghostedDistArrayFactory(BaseClass):
     """
     Returns a ghosted distributed array class that derives from BaseClass
@@ -14,11 +15,10 @@ def ghostedDistArrayFactory(BaseClass):
     @return ghosted dist array class
     """
 
-
     class GhostedDistArrayAny(BaseClass):
         """
-        Ghosted distributed array. Each process owns data and exposes the 
-        halo region to other processes. These are accessed with tuples 
+        Ghosted distributed array. Each process owns data and exposes the
+        halo region to other processes. These are accessed with tuples
         such (1, 0) for north, (-1, 0) for south, etc.
         """
 
@@ -27,15 +27,15 @@ def ghostedDistArrayFactory(BaseClass):
             Constructor
             @param shape shape of the array
             @param dtype numpy data type
-            @param numGhosts the width of the halo 
+            @param numGhosts the width of the halo
             """
             # call the parent Ctor
             BaseClass.__init__(self, shape, dtype)
 
         def setNumberOfGhosts(self, numGhosts):
             """
-	       Set the width of the ghost halo
-	       @param numGhosts halo thickness
+            Set the width of the ghost halo
+            @param numGhosts halo thickness
             """
             # expose each window to other PE domains
             ndim = len(self.shape)
@@ -47,15 +47,17 @@ def ghostedDistArrayFactory(BaseClass):
                     # given direction, a 1 represents a layer of
                     # thickness numGhosts on the high index side,
                     # -1 on the low index side.
-                    winId = tuple( [0 for i in range(dim) ] \
-                               + [drect] + [0 for i in range(dim+1, ndim) ] )
-                
+                    winId = tuple([0 for i in range(dim)] +
+                                  [drect] +
+                                  [0 for i in range(dim+1, ndim)])
+
                     slce = slice(0, numGhosts)
                     if drect == 1:
-                        slce = slice(self.shape[dim] - numGhosts, self.shape[dim])
-        
+                        slce = slice(self.shape[dim] -
+                                     numGhosts, self.shape[dim])
+
                     slab = self.getSlab(dim, slce)
-                
+
                     # expose MPI window
                     self.expose(slab, winId)
 
@@ -69,15 +71,15 @@ def ghostedDistArrayFactory(BaseClass):
             """
             shape = self.shape
             ndim = len(shape)
-        
-            slab = [ slice(0, shape[i]) for i in range(dim) ] \
-                    + [slce] + [ slice(0, shape[i]) for i in range(dim+1, ndim) ]
+
+            slab = [slice(0, shape[i]) for i in range(dim)] + \
+                   [slce] + [slice(0, shape[i]) for i in range(dim+1, ndim)]
             return slab
 
         def getEllipsis(self, winID):
             """
-            Get the ellipsis for a given halo side. 
-        
+            Get the ellipsis for a given halo side
+
             @param winID a tuple of zeros and one +1 or -1.  To access
                the "north" side for instance, set side=(1, 0),
                (-1, 0) to access the south side, (0, 1) the east
@@ -96,32 +98,35 @@ def ghostedDistArrayFactory(BaseClass):
 GhostedDistArray = ghostedDistArrayFactory(DistArray)
 GhostedMaskedDistArray = ghostedDistArrayFactory(MaskedDistArray)
 
+
 #
 # Ghosted distributed array static constructors
 #
 def gdaArray(arry, dtype, numGhosts=1):
-    """   
+    """
     ghosted distributed array constructor
     @param arry numpy-like array
     @param numGhosts the number of ghosts (>= 0)
-    """ 
+    """
     a = numpy.array(arry, dtype)
     res = GhostedDistArray(a.shape, a.dtype)
     res.setNumberOfGhosts(numGhosts)
-    res[:] = a # copy 
+    res[:] = a
     return res
+
 
 def gdaZeros(shape, dtype, numGhosts=1):
     """
     ghosted distributed array zero constructor
     @param shape the shape of the array
-    @param dtype the numpy data type 
+    @param dtype the numpy data type
     @param numGhosts the number of ghosts (>= 0)
     """
     res = GhostedDistArray(shape, dtype)
     res.setNumberOfGhosts(numGhosts)
     res[:] = 0
     return res
+
 
 def gdaOnes(shape, dtype, numGhosts=1):
     """
@@ -135,27 +140,29 @@ def gdaOnes(shape, dtype, numGhosts=1):
     res[:] = 1
     return res
 
+
 #
 # Ghosted masked distributed array static constructors
 #
 def gmdaArray(arry, dtype, mask=None, numGhosts=1):
-    """   
+    """
     ghosted distributed array constructor
     @param arry numpy-like array
     @param numGhosts the number of ghosts (>= 0)
-    """ 
+    """
     a = numpy.array(arry, dtype)
     res = GhostedMaskedDistArray(a.shape, a.dtype)
-    reas.mask = mask
+    res.mask = mask
     res.setNumberOfGhosts(numGhosts)
-    res[:] = a # copy 
+    res[:] = a
     return res
+
 
 def gmdaZeros(shape, dtype, mask=None, numGhosts=1):
     """
     ghosted distributed array zero constructor
     @param shape the shape of the array
-    @param dtype the numpy data type 
+    @param dtype the numpy data type
     @param numGhosts the number of ghosts (>= 0)
     """
     res = GhostedMaskedDistArray(shape, dtype)
@@ -163,6 +170,7 @@ def gmdaZeros(shape, dtype, mask=None, numGhosts=1):
     res.setNumberOfGhosts(numGhosts)
     res[:] = 0
     return res
+
 
 def gmdaOnes(shape, dtype, mask=None, numGhosts=1):
     """
@@ -178,7 +186,8 @@ def gmdaOnes(shape, dtype, mask=None, numGhosts=1):
     return res
 
 ######################################################################
-    
+
+
 def test():
 
     import numpy
@@ -187,33 +196,45 @@ def test():
     n, m = 2, 3
 
     # create dist array with 1 ghost
-    
-    da = gdaZeros( (n, m), numpy.float64, 1 )
+
+    da = gdaZeros((n, m), numpy.float64, 1)
     rk = da.rk
     sz = da.sz
 
     # load the data on each PE
-    data = numpy.reshape(numpy.array( [rk*100.0 + i for i in range(n*m) ] ),
-                         (n,m))
+    data = numpy.reshape(numpy.array([rk*100.0 + i for i in range(n*m)]),
+                         (n, m))
     da[:] = data
     print(da)
 
-    # this shows how one can access slabs 
+    # this shows how one can access slabs
     for pe in range(sz):
         winIndex = (-1, 0)
-        print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk, str(winIndex), pe), \
-              da.getData(pe, winID=winIndex))
+        data = da.getData(pe, winID=winIndex)
+        print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk,
+                                                                 str(winIndex),
+                                                                 pe,
+                                                                 data))
         winIndex = (+1, 0)
-        print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk, str(winIndex), pe), \
-              da.getData(pe, winID=winIndex))
+        data = da.getData(pe, winID=winIndex)
+        print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk,
+                                                                 str(winIndex),
+                                                                 pe,
+                                                                 data))
         winIndex = (0, -1)
-        print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk, str(winIndex), pe), \
-              da.getData(pe, winID=winIndex))
+        data = da.getData(pe, winID=winIndex)
+        print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk,
+                                                                 str(winIndex),
+                                                                 pe,
+                                                                 data))
         winIndex = (0, +1)
-        print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk, str(winIndex), pe), \
-              da.getData(pe, winID=winIndex))
-
-    # to keep mpi4py quite
+        data = da.getData(pe, winID=winIndex)
+        print('[{0}] {1} slab belonging to {2} is: {3}\n'.format(rk,
+                                                                 str(winIndex),
+                                                                 pe,
+                                                                 data))
+    # to keep mpi4py quiet
     da.free()
 
-if __name__ == '__main__': test()
+if __name__ == '__main__':
+    test()
