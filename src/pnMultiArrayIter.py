@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 """
 Multi-array iterator class.
@@ -8,6 +8,7 @@ Multi-array iterator class.
 import operator
 from functools import reduce
 import numpy
+
 
 class MultiArrayIter:
 
@@ -25,11 +26,11 @@ class MultiArrayIter:
         if rowMajor:
             # row major
             for i in range(self.ndims - 2, -1, -1):
-                self.dimProd[i] =  self.dimProd[i + 1] * self.dims[i + 1]
+                self.dimProd[i] = self.dimProd[i + 1] * self.dims[i + 1]
         else:
             # column major
             for i in range(1, self.ndims):
-                self.dimProd[i] =  self.dimProd[i - 1] * self.dims[i - 1]
+                self.dimProd[i] = self.dimProd[i - 1] * self.dims[i - 1]
 
     def __iter__(self):
         return self
@@ -62,22 +63,24 @@ class MultiArrayIter:
         Get index set from given big index
         @param bigIndex
         @return index set
-        @note no checks are performed to ensure that the returned big index is valid
+        @note no checks are performed to ensure that the returned
+        big index is valid
         """
         indices = numpy.array([0 for i in range(self.ndims)])
         for i in range(self.ndims):
             indices[i] = bigIndex // self.dimProd[i] % self.dims[i]
         return indices
-        
+
     def getBigIndexFromIndices(self, indices):
         """
         Get the big index from a given set of indices
-        @param indices 
+        @param indices
         @return big index
-        @note no checks are performed to ensure that the returned indices are valid
+        @note no checks are performed to ensure that the returned
+        indices are valid
         """
-        return reduce(operator.add, [self.dimProd[i]*indices[i] \
-                                         for i in range(self.ndims)], 0)
+        return reduce(operator.add, [self.dimProd[i]*indices[i]
+                                     for i in range(self.ndims)], 0)
 
     def reset(self):
         """
@@ -106,32 +109,33 @@ class MultiArrayIter:
         @param inds index set
         @return True if valid, False otherwise
         """
-        return reduce(operator.and_, [inds[d] < self.dims[d] and inds[d] >= 0 \
-                                         for d in range(self.ndims)], True)
-        
+        return reduce(operator.and_, [0 <= inds[d] < self.dims[d]
+                                      for d in range(self.ndims)], True)
+
 ######################################################################
+
 
 def test(rowMajor):
     dims = (2, 3, 4)
     print('row major: dims = {0}'.format(dims))
-    for it in MultiArrayIter( (2, 3, 4), rowMajor = rowMajor):
+    for it in MultiArrayIter((2, 3, 4), rowMajor=rowMajor):
         inds = it.getIndices()
         bi = it.getBigIndex()
         print('indices = {0} big index = {1}'.format(inds, bi))
-        assert( it.getBigIndexFromIndices(inds) == it.getBigIndex() )
+        assert(it.getBigIndexFromIndices(inds) == it.getBigIndex())
         inds2 = it.getIndicesFromBigIndex(bi)
-        assert( reduce(operator.and_, \
-                           [inds2[d] == inds[d] for d in range(it.ndims)], True ) )
-        assert( it.isBigIndexValid(bi) )
-        assert( it.areIndicesValid(inds) )
+        assert(reduce(operator.and_, [inds2[d] == inds[d]
+                                      for d in range(it.ndims)], True))
+        assert(it.isBigIndexValid(bi))
+        assert(it.areIndicesValid(inds))
 
     # check validity
-    assert( not it.isBigIndexValid(-1) )
-    assert( not it.isBigIndexValid( it.ntot ) )
-    assert( not it.areIndicesValid( (2, 2, 3) ) )
-    assert( not it.areIndicesValid( (1, 3, 3) ) )
-    assert( not it.areIndicesValid( (1, 2, 4) ) )
+    assert(not it.isBigIndexValid(-1))
+    assert(not it.isBigIndexValid(it.ntot))
+    assert(not it.areIndicesValid((2, 2, 3)))
+    assert(not it.areIndicesValid((1, 3, 3)))
+    assert(not it.areIndicesValid((1, 2, 4)))
 
 if __name__ == '__main__':
-    test(rowMajor = True)
-    test(rowMajor = False)
+    test(rowMajor=True)
+    test(rowMajor=False)
