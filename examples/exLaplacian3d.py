@@ -5,6 +5,7 @@ import pnumpy
 from pnumpy import CubeDecomp
 import sys
 import numpy
+import math
 from mpi4py import MPI
 
 """
@@ -71,7 +72,7 @@ for i in range(iEnd - iBeg):
         y = yMin + dy*(jBeg + j + 0.5)
         for k in range(kEnd - kBeg):
             z = zMin + dz*(kBeg + k + 0.5)
-            f[i, j, z] = numpy.sin(numpy.pi*x) * numpy.cos(2*numpy.pi*y)
+            f[i, j, k] = math.sin(numpy.pi*x) * math.cos(2*numpy.pi*y)
 
 # compute the Laplacian
 lapl = pnumpy.Laplacian(dc, periodic=(True, True, True))
