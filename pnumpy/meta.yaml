@@ -1,6 +1,6 @@
 package:
   name: pnumpy
-  version: "1.3.3"
+  version: "1.3.4"
 
 source:
   fn: pnumpy-1.3.4.tar.gz

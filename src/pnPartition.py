@@ -13,6 +13,10 @@ import copy
 class Partition:
 
     def __init__(self, ndims):
+        """
+        Constructor
+        @param ndims number of dimensions
+        """
         self.ndims = ndims
         # the entire domain
         self.domain = [slice(0, None) for i in range(ndims)]
@@ -31,7 +35,7 @@ class Partition:
         @param displacement vector in index space
         @return domain shifted to the right/left
         """
-        res = copy.deepcopy(self)
+        res = Partition(self.ndims)
         for i in range(self.ndims):
             d = disp[i]
             s = self.domain[i]
@@ -47,7 +51,7 @@ class Partition:
         @param displacement vector in index space
         @return the part of the domain that is exposed by the shift
         """
-        res = copy.deepcopy(self)
+        res = Partition(self.ndims)
         for i in range(self.ndims):
             d = disp[i]
             s = self.domain[i]
