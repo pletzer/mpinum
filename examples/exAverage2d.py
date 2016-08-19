@@ -67,7 +67,7 @@ if rk == 0:
 outputData = numpy.zeros((nx, ny), numpy.float32)
 
 # zero displacement stencil
-outputData[:] = inputData / 9.
+outputData[:] = inputData
 
 notPeriodic = (False, False)
 
@@ -83,7 +83,7 @@ for disp in (-1, 0), (1, 0), (0, -1), (0, 1):
     # local updates
     src = domain.shift(disp).getSlice()
     dst = domain.shift(nisp).getSlice()
-    outputData[dst] += inputData[src] / 9.
+    outputData[dst] += inputData[src]
 
     # remote updates
     src = domain.extract(disp).getSlice()
@@ -116,13 +116,13 @@ for disp in (-1, -1), (-1, 1), (1, -1), (1, 1):
     src = domain.shift(disp).getSlice()
     dst = domain.shift(nisp).getSlice()
     #print('disp = {} d0 = {} d1 = {} src = {} dst = {}'.format(disp, d0, d1, src, dst))
-    outputData[dst] += inputData[src] / 9.
+    outputData[dst] += inputData[src]
 
     # remote updates
     neighRk0 = dc.getNeighborProc(rk, d0, periodic=notPeriodic)
     neighRk1 = dc.getNeighborProc(rk, d1, periodic=notPeriodic)
     neighRk = dc.getNeighborProc(rk, disp, periodic=notPeriodic)
-    print('[{}] disp = {} neighRk = {}'.format(rk, disp, neighRk))
+    #print('[{}] disp = {} neighRk = {}'.format(rk, disp, neighRk))
     data0 = inputData.getData(neighRk0, n0)
     data1 = inputData.getData(neighRk1, n1)
     data = inputData.getData(neighRk, nisp)
@@ -130,24 +130,26 @@ for disp in (-1, -1), (-1, 1), (1, -1), (1, 1):
     # first axis
     src = domain.shift(d0).extract(d1).getSlice()
     dst = domain.shift(n0).extract(n1).getSlice()
-    outputData[dst] += data1[src] / 9.
+    outputData[dst] += data1[src]
     # no need to correct numInvalidNeighbors since already taken into account
 
     # second axis
     src = domain.shift(d1).extract(d0).getSlice()
     dst = domain.shift(n1).extract(n0).getSlice()
-    outputData[dst] += data0[src] / 9.
+    outputData[dst] += data0[src]
     # no need to correct numInvalidNeighbors since already taken into account
 
     # diagonal (mixed)
     src = domain.extract(d0).extract(d1).getSlice()
     dst = domain.extract(n0).extract(n1).getSlice()
-    outputData[dst] += data / 9.
-    if neighRk is None:
-        print('[{}] incrementating dst={} src={}'.format(rk, dst, src))
+    outputData[dst] += data
+    if neighRk is None and neighRk0 is None and neighRk1 is None:
+        #print('[{}] incrementating dst={} src={}'.format(rk, dst, src))
         # the diagonal direction is counted twice
         numInvalidNeighbors[dst] -= 1
 
+# divide by the numbe of valid neighbors
+outputData /= (9. - numInvalidNeighbors)
 
 outputAvg = numpy.sum(outputData)
 outAvg = numpy.sum(MPI.COMM_WORLD.gather(outputAvg, root=0))
@@ -155,9 +157,9 @@ if rk == 0:
     outAvg /= float(sz * nx * ny)
     print('output average: {0:.5f}'.format(outAvg))
 
-#print('[{}] input: \n {}'.format(rk, inputData))
-#print('[{}] output: \n {}'.format(rk, outputData))
-print('[{}] numInvalidNeighbors: \n {}'.format(rk, numInvalidNeighbors))
+print('[{}] input: \n {}'.format(rk, inputData))
+print('[{}] output: \n {}'.format(rk, outputData))
+#print('[{}] numInvalidNeighbors: \n {}'.format(rk, numInvalidNeighbors))
 
 # if you don't want to get a warning message
 inputData.free()
