@@ -9,17 +9,39 @@ from mpi4py import MPI
 Apply averaging sencil in 2d
 """
 
+def setValues(nxG, nyG, iBeg, iEnd, jBeg, jEnd, data):
+    """
+    Set setValues
+    @param nxG number of global cells in x
+    @param nyG number of global cells in y
+    @param iBeg global starting index in x
+    @param iEnd global ending index in x
+    @param jBeg global starting index in y
+    @param jEnd global ending index in y
+    """
+    nxGHalf = nxG/2.
+    nyGHalf = nyG/2.
+    nxGQuart = nxGHalf/2.
+    nyGQuart = nyGHalf/2.
+    for i in range(data.shape[0]):
+        iG = iBeg + i
+        di = iG - nxG
+        for j in range(data.shape[1]):
+            jG = jBeg + j
+            dj = jG - 0.8*nyG
+            data[i, j] = numpy.floor(1.9*numpy.exp(-di**2/nxGHalf**2 - dj**2/nyGHalf**2))
+
 # local rank and number of procs
 rk = MPI.COMM_WORLD.Get_rank()
 sz = MPI.COMM_WORLD.Get_size()
 
 # global domain sizes
-nxG, nyG = 4, 8
+nxG, nyG = 16, 32
 
 # domain decomposition
 dc = CubeDecomp(sz, (nxG, nyG))
 
-# starting/ending indices for local domain
+# starting/ending global indices for local domain
 slab = dc.getSlab(rk)
 iBeg, iEnd = slab[0].start, slab[0].stop
 jBeg, jEnd = slab[1].start, slab[1].stop
@@ -36,8 +58,7 @@ if not dc.getDecomp():
 
 # create and set the input distributed array
 inputData = pnumpy.gdaZeros((nx, ny), numpy.float32, numGhosts=1)
-if rk == 0:
-    inputData[-1, -1] = 1.0
+setValues(nxG, nyG, iBeg, iEnd, jBeg, jEnd, inputData)
 
 # store the number of times a cell has an invalid neighbor so 
 # we can correct the weights
@@ -157,9 +178,8 @@ if rk == 0:
     outAvg /= float(sz * nx * ny)
     print('output average: {0:.5f}'.format(outAvg))
 
-print('[{}] input: \n {}'.format(rk, inputData))
-print('[{}] output: \n {}'.format(rk, outputData))
-#print('[{}] numInvalidNeighbors: \n {}'.format(rk, numInvalidNeighbors))
+#print('[{}] input: \n {}'.format(rk, inputData))
+##print('[{}] numInvalidNeighbors: \n {}'.format(rk, numInvalidNeighbors))
 
 # if you don't want to get a warning message
 inputData.free()
