@@ -14,7 +14,7 @@ rk = MPI.COMM_WORLD.Get_rank()
 sz = MPI.COMM_WORLD.Get_size()
 
 # local domain sizes
-nx, ny = 12, 13
+nx, ny = 3, 3
 
 # domain decomposition
 dc = CubeDecomp(sz, (nx, ny))
@@ -70,19 +70,20 @@ for disp in (-1, 0), (1, 0), (0, -1), (0, 1):
     # local updates
     src = domain.shift(disp).getSlice()
     dst = domain.shift(nisp).getSlice()
+    print('disp = {} src = {} dst = {}'.format(disp, src, dst))
     outputData[dst] += inputData[src] / 9.
 
     # remote updates
     src = domain.extract(disp).getSlice()
     dst = domain.extract(nisp).getSlice()
     neighRk = dc.getNeighborProc(rk, disp, periodic=notPeriodic)
-    outputData[dst] = inputData.getData(neighRk, nisp) / 9.
+    outputData[dst] += inputData.getData(neighRk, nisp) / 9.
 
 #
 # south-west, north-west, south-east, north-east
 #
 
-for disp in (-1, -1), (-1, 1), (1, -1), (1, 1):
+for disp in []: #(-1, -1), (-1, 1), (1, -1), (1, 1):
 
     # negative of displacement
     nisp = tuple([-d for d in disp])
@@ -129,6 +130,9 @@ outputAvg = numpy.sum(outputData)
 outAvgs = MPI.COMM_WORLD.gather(outputAvg, root=0)
 if rk == 0:
     print('output average: {0:.5f}'.format(numpy.sum(outAvgs)))
+
+print('[{}] input: \n {}'.format(rk, inputData))
+print('[{}] output: \n {}'.format(rk, outputData))
 
 # if you don't want to get a warning message
 inputData.free()
