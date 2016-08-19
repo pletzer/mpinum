@@ -93,7 +93,7 @@ for disp in (-1, 0), (1, 0), (0, -1), (0, 1):
 
     # will need to fix the weights when there is no neighbor
     if neighRk is None:
-       numInvalidNeighbors[dst] += 1
+       numInvalidNeighbors[dst] += 3
 
 #
 # south-west, north-west, south-east, north-east
@@ -115,34 +115,38 @@ for disp in (-1, -1), (-1, 1), (1, -1), (1, 1):
     # local updates
     src = domain.shift(disp).getSlice()
     dst = domain.shift(nisp).getSlice()
-    print('disp = {} d0 = {} d1 = {} src = {} dst = {}'.format(disp, d0, d1, src, dst))
+    #print('disp = {} d0 = {} d1 = {} src = {} dst = {}'.format(disp, d0, d1, src, dst))
     outputData[dst] += inputData[src] / 9.
 
     # remote updates
     neighRk0 = dc.getNeighborProc(rk, d0, periodic=notPeriodic)
     neighRk1 = dc.getNeighborProc(rk, d1, periodic=notPeriodic)
     neighRk = dc.getNeighborProc(rk, disp, periodic=notPeriodic)
+    print('[{}] disp = {} neighRk = {}'.format(rk, disp, neighRk))
     data0 = inputData.getData(neighRk0, n0)
     data1 = inputData.getData(neighRk1, n1)
     data = inputData.getData(neighRk, nisp)
 
+    # first axis
     src = domain.shift(d0).extract(d1).getSlice()
     dst = domain.shift(n0).extract(n1).getSlice()
     outputData[dst] += data1[src] / 9.
-    #if neighRk1 is None:
-    #    numInvalidNeighbors[dst] += 1
+    # no need to correct numInvalidNeighbors since already taken into account
 
+    # second axis
     src = domain.shift(d1).extract(d0).getSlice()
     dst = domain.shift(n1).extract(n0).getSlice()
     outputData[dst] += data0[src] / 9.
-    #if neighRk0 is None:
-    #    numInvalidNeighbors[dst] += 1
+    # no need to correct numInvalidNeighbors since already taken into account
 
+    # diagonal (mixed)
     src = domain.extract(d0).extract(d1).getSlice()
-    dst = domain.extract(n0).extract(n0).getSlice()
-    outputData[dst] += data[src] / 9.
+    dst = domain.extract(n0).extract(n1).getSlice()
+    outputData[dst] += data / 9.
     if neighRk is None:
-        numInvalidNeighbors[dst] += 1
+        print('[{}] incrementating dst={} src={}'.format(rk, dst, src))
+        # the diagonal direction is counted twice
+        numInvalidNeighbors[dst] -= 1
 
 
 outputAvg = numpy.sum(outputData)
@@ -151,8 +155,8 @@ if rk == 0:
     outAvg /= float(sz * nx * ny)
     print('output average: {0:.5f}'.format(outAvg))
 
-print('[{}] input: \n {}'.format(rk, inputData))
-print('[{}] output: \n {}'.format(rk, outputData))
+#print('[{}] input: \n {}'.format(rk, inputData))
+#print('[{}] output: \n {}'.format(rk, outputData))
 print('[{}] numInvalidNeighbors: \n {}'.format(rk, numInvalidNeighbors))
 
 # if you don't want to get a warning message
