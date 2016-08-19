@@ -25,7 +25,7 @@ dx, dy = (xMax - xMin)/float(nx), (yMax - yMin)/float(ny)
 xs = numpy.array([xMin + dx*(i+0.5) for i in range(nx)])
 ys = numpy.array([yMin + dy*(j+0.5) for j in range(ny)])
 
-# domain dc.sition
+# domain decomposition
 dc = CubeDecomp(sz, (nx, ny))
 
 # the dc.must be regular
