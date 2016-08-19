@@ -70,7 +70,6 @@ for disp in (-1, 0), (1, 0), (0, -1), (0, 1):
     # local updates
     src = domain.shift(disp).getSlice()
     dst = domain.shift(nisp).getSlice()
-    print('disp = {} src = {} dst = {}'.format(disp, src, dst))
     outputData[dst] += inputData[src] / 9.
 
     # remote updates
@@ -83,26 +82,23 @@ for disp in (-1, 0), (1, 0), (0, -1), (0, 1):
 # south-west, north-west, south-east, north-east
 #
 
-for disp in []: #(-1, -1), (-1, 1), (1, -1), (1, 1):
+for disp in (-1, -1), (-1, 1), (1, -1), (1, 1):
 
     # negative of displacement
     nisp = tuple([-d for d in disp])
 
     # displacement purely along axis 0
-    d0 = [0, 0]
-    d0[0] = disp[0]
-    d0 = tuple(d0)
+    d0 = (disp[0], 0)
     n0 = tuple([-d for d in d0])
 
     # displacement purely along axis 1
-    d1 = [0, 0]
-    d1[1] = disp[1]
-    d1 = tuple(d1)
+    d1 = (0, disp[1])
     n1 = tuple([-d for d in d1])
 
     # local updates
     src = domain.shift(disp).getSlice()
     dst = domain.shift(nisp).getSlice()
+    print('disp = {} d0 = {} d1 = {} src = {} dst = {}'.format(disp, d0, d1, src, dst))
     outputData[dst] += inputData[src] / 9.
 
     # remote updates
@@ -127,9 +123,9 @@ for disp in []: #(-1, -1), (-1, 1), (1, -1), (1, 1):
 
 
 outputAvg = numpy.sum(outputData)
-outAvgs = MPI.COMM_WORLD.gather(outputAvg, root=0)
+outAvg = numpy.sum(MPI.COMM_WORLD.gather(outputAvg, root=0))/(float(sz * nx * ny))
 if rk == 0:
-    print('output average: {0:.5f}'.format(numpy.sum(outAvgs)))
+    print('output average: {0:.5f}'.format(outAvg))
 
 print('[{}] input: \n {}'.format(rk, inputData))
 print('[{}] output: \n {}'.format(rk, outputData))
