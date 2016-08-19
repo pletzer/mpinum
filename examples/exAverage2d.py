@@ -13,11 +13,19 @@ Apply averaging sencil in 2d
 rk = MPI.COMM_WORLD.Get_rank()
 sz = MPI.COMM_WORLD.Get_size()
 
-# local domain sizes
-nx, ny = 3, 3
+# global domain sizes
+nxG, nyG = 4, 8
 
 # domain decomposition
-dc = CubeDecomp(sz, (nx, ny))
+dc = CubeDecomp(sz, (nxG, nyG))
+
+# starting/ending indices for local domain
+slab = dc.getSlab(rk)
+iBeg, iEnd = slab[0].start, slab[0].stop
+jBeg, jEnd = slab[1].start, slab[1].stop
+
+# local domain sizes
+nx, ny = iEnd  - iBeg, jEnd - jBeg
 
 # the decomp must be regular
 if not dc.getDecomp():
@@ -27,9 +35,13 @@ if not dc.getDecomp():
         sys.exit(1)
 
 # create and set the input distributed array
-inputData = pnumpy.gdaZeros((nx, ny), numpy.float32, numGhosts=1 )
+inputData = pnumpy.gdaZeros((nx, ny), numpy.float32, numGhosts=1)
 if rk == 0:
-    inputData[0, 0] = 1.0
+    inputData[-1, -1] = 1.0
+
+# store the number of times a cell has an invalid neighbor so 
+# we can correct the weights
+numInvalidNeighbors = numpy.zeros((nx, ny), numpy.int32)
 
 domain = Partition(2)
 
@@ -45,8 +57,9 @@ for disp in (-1, -1), (-1, 1), (1, -1), (1, 1):
 
 
 # input average
-inputAvg = inputData.reduce(lambda x,y:x+y)/float(sz * nx * ny)
+inputAvg = inputData.reduce(lambda x,y:x+y, 0., 0)
 if rk == 0:
+    inputAvg /= float(sz * nx * ny)
     print('input average: {0:.5f}'.format(inputAvg))
 
 # use a star stencil (9 weights in 2d)
@@ -76,7 +89,11 @@ for disp in (-1, 0), (1, 0), (0, -1), (0, 1):
     src = domain.extract(disp).getSlice()
     dst = domain.extract(nisp).getSlice()
     neighRk = dc.getNeighborProc(rk, disp, periodic=notPeriodic)
-    outputData[dst] += inputData.getData(neighRk, nisp) / 9.
+    outputData[dst] += inputData.getData(neighRk, nisp)
+
+    # will need to fix the weights when there is no neighbor
+    if neighRk is None:
+       numInvalidNeighbors[dst] += 1
 
 #
 # south-west, north-west, south-east, north-east
@@ -112,26 +129,31 @@ for disp in (-1, -1), (-1, 1), (1, -1), (1, 1):
     src = domain.shift(d0).extract(d1).getSlice()
     dst = domain.shift(n0).extract(n1).getSlice()
     outputData[dst] += data1[src] / 9.
+    #if neighRk1 is None:
+    #    numInvalidNeighbors[dst] += 1
 
     src = domain.shift(d1).extract(d0).getSlice()
     dst = domain.shift(n1).extract(n0).getSlice()
     outputData[dst] += data0[src] / 9.
+    #if neighRk0 is None:
+    #    numInvalidNeighbors[dst] += 1
 
     src = domain.extract(d0).extract(d1).getSlice()
     dst = domain.extract(n0).extract(n0).getSlice()
-    outputData[dst] += data[src] /9.
+    outputData[dst] += data[src] / 9.
+    if neighRk is None:
+        numInvalidNeighbors[dst] += 1
 
 
 outputAvg = numpy.sum(outputData)
-outAvg = numpy.sum(MPI.COMM_WORLD.gather(outputAvg, root=0))/(float(sz * nx * ny))
+outAvg = numpy.sum(MPI.COMM_WORLD.gather(outputAvg, root=0))
 if rk == 0:
+    outAvg /= float(sz * nx * ny)
     print('output average: {0:.5f}'.format(outAvg))
 
 print('[{}] input: \n {}'.format(rk, inputData))
 print('[{}] output: \n {}'.format(rk, outputData))
+print('[{}] numInvalidNeighbors: \n {}'.format(rk, numInvalidNeighbors))
 
 # if you don't want to get a warning message
 inputData.free()
-
-
-

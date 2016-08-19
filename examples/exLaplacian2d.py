@@ -12,7 +12,7 @@ Apply the finite difference Laplacian operator in 2d
 rk = MPI.COMM_WORLD.Get_rank()
 sz = MPI.COMM_WORLD.Get_size()
 
-# domain sizes
+# global domain sizes
 nx, ny = 12, 36
 
 # domain sizes
@@ -28,7 +28,7 @@ ys = numpy.array([yMin + dy*(j+0.5) for j in range(ny)])
 # domain decomposition
 dc = CubeDecomp(sz, (nx, ny))
 
-# the dc.must be regular
+# the decomp must be regular
 if not dc.getDecomp():
     if rk == 0: 
         print('no decomp could be found, adjust the number of procs')
