@@ -9,6 +9,38 @@ from mpi4py import MPI
 Apply averaging sencil in 2d
 """
 
+def plot(nxG, nyG, iBeg, iEnd, jBeg, jEnd, data, title=''):
+    """
+    Plot distributed array
+    @param nxG number of global cells in x
+    @param nyG number of global cells in y
+    @param iBeg global starting index in x
+    @param iEnd global ending index in x
+    @param jBeg global starting index in y
+    @param jEnd global ending index in y
+    @param data local array
+    @param title plot title
+    """
+    sz = MPI.COMM_WORLD.Get_size()
+    rk = MPI.COMM_WORLD.Get_rank()
+    iBegs = MPI.COMM_WORLD.gather(iBeg, root=0)
+    iEnds = MPI.COMM_WORLD.gather(iEnd, root=0)
+    jBegs = MPI.COMM_WORLD.gather(jBeg, root=0)
+    jEnds = MPI.COMM_WORLD.gather(jEnd, root=0)
+    arrays = MPI.COMM_WORLD.gather(numpy.array(data), root=0)
+    if rk == 0:
+        bigArray = numpy.zeros((nxG, nyG), data.dtype)
+        for pe in range(sz):
+            bigArray[iBegs[pe]:iEnds[pe], jBegs[pe]:jEnds[pe]] = arrays[pe]
+        from matplotlib import pylab
+        pylab.pcolor(bigArray.transpose())
+        # add the decomp domains
+        for pe in range(sz):
+            pylab.plot([iBegs[pe], iBegs[pe]], [0, nyG - 1], 'w--')
+            pylab.plot([0, nxG - 1], [jBegs[pe], jBegs[pe]], 'w--')
+        pylab.title(title)
+        pylab.show()
+
 def setValues(nxG, nyG, iBeg, iEnd, jBeg, jEnd, data):
     """
     Set setValues
@@ -18,6 +50,7 @@ def setValues(nxG, nyG, iBeg, iEnd, jBeg, jEnd, data):
     @param iEnd global ending index in x
     @param jBeg global starting index in y
     @param jEnd global ending index in y
+    @param data local array
     """
     nxGHalf = nxG/2.
     nyGHalf = nyG/2.
@@ -177,6 +210,9 @@ outAvg = numpy.sum(MPI.COMM_WORLD.gather(outputAvg, root=0))
 if rk == 0:
     outAvg /= float(sz * nx * ny)
     print('output average: {0:.5f}'.format(outAvg))
+
+plot(nxG, nyG, iBeg, iEnd, jBeg, jEnd, inputData, 'input')
+plot(nxG, nyG, iBeg, iEnd, jBeg, jEnd, outputData, 'output')
 
 #print('[{}] input: \n {}'.format(rk, inputData))
 ##print('[{}] numInvalidNeighbors: \n {}'.format(rk, numInvalidNeighbors))
