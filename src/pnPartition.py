@@ -35,7 +35,7 @@ class Partition:
         @param displacement vector in index space
         @return domain shifted to the right/left
         """
-        res = Partition(self.ndims)
+        res = copy.deepcopy(self)
         for i in range(self.ndims):
             d = disp[i]
             s = self.domain[i]
@@ -51,7 +51,7 @@ class Partition:
         @param displacement vector in index space
         @return the part of the domain that is exposed by the shift
         """
-        res = Partition(self.ndims)
+        res = copy.deepcopy(self)
         for i in range(self.ndims):
             d = disp[i]
             s = self.domain[i]
@@ -95,8 +95,18 @@ def test3d():
     p = Partition(3)
     print(p.shift((1, -2, 3)))
 
+def testCross2d():
+    p = Partition(2)
+    print('p.shift((1, -1))')
+    print(p.shift((1, -1)))
+    print('p.shift((1, 0)).shift((0, -1))')
+    print(p.shift((1, 0)).shift((0, -1)))
+    print('p.extract((1, -1))')
+    print(p.extract((1, -1)))
+
 if __name__ == '__main__':
     test0d()
     test1d()
     test2d()
     test3d()
+    testCross2d()
