@@ -6,7 +6,7 @@ import numpy
 from mpi4py import MPI
 
 """
-Apply averaging sencil in 2d
+Apply 9 point averaging sencil in 2d
 """
 
 def plot(nxG, nyG, iBeg, iEnd, jBeg, jEnd, data, title=''):
@@ -69,7 +69,7 @@ rk = MPI.COMM_WORLD.Get_rank()
 sz = MPI.COMM_WORLD.Get_size()
 
 # global domain sizes
-nxG, nyG = 16, 32
+nxG, nyG = 64, 128
 
 # domain decomposition
 dc = CubeDecomp(sz, (nxG, nyG))
