@@ -10,64 +10,73 @@ from pnumpy import CubeDecomp
 
 class DomainPartitionIter:
 
-    def __init__(self, disp, decomp, myRank, periodic=None):
+    def __init__(self, disp):
         """
         Constructor
         @param disp displacement vector
-        @param decomp decomposition 
-        @param myRank my rank
-        @param periodic list of True/False values (True = periodic)
         """
         self.disp = disp
         self.ndims = len(disp)
+
+        # counter
         self.index = -1
 
-        # determine the locations of the non-zero displacement values
+        # index locations where disp is non-zero
         nonZeroLocs = []
         for i in range(self.ndims):
             if disp[i] != 0:
                nonZeroLocs.append(i) 
 
-        # list of unit displacements, all elements are 0 except one
+        # list of unit displacements, all combinations of 
+        # vectors pointing in the diection of dispo. Eg 
+        # if disp =  (1, 0, -1) then dispUnits = 
+        # [(1, 0, 0), (0, 0, -1)]
         dispUnits = []
         for loc in nonZeroLocs:
             du = [0] * self.ndims
             du[loc] = disp[loc]
             dispUnits.append(numpy.array(du))
-        #print(dispUnits)
 
-        self.srcDom = []
-        self.dstDom = []
-        self.remoteRk = []
-        for it in MultiArrayIter([2] * len(nonZeroLocs)):
-            # inds refer to non-zero indices of disp that require extract (1)/shift (0) operation
+        # list of partitions
+        self.partitions = []
+
+        # for each dispUnits apply either shift or extract operation.
+        # Number of partitions is 2**len(dispUnits)
+        for it in MultiArrayIter([2] * len(dispUnits)):
+
+            # elements of inds:
+            # 0 => shift
+            # 1 => extract
             inds = it.getIndices()
-            sDom = Partition(self.ndims)
-            dDom = Partition(self.ndims)
-            dirct = [0] * self.ndims
-            for i in range(len(inds)):
-                du = dispUnits[i]
-                loc = nonZeroLocs[i]
-                if inds[i] == 0:
-                    sDom = sDom.shift(du)
-                    dDom = dDom.shift(-du)
-                else:
-                    dirct[loc] = -disp[loc]
-                    sDom = sDom.extract(du)
-                    dDom = dDom.extract(-du)
-            self.srcDom.append(sDom)
-            self.dstDom.append(dDom)
-            rk = decomp.getNeighborProc(myRank, dirct, periodic=periodic)
-            self.remoteRk.append(rk)
-            print('...inds = {0} sDom = {1} dDom = {2} remote rank = {3}'.format(inds, sDom.getSlice(), dDom.getSlice(), rk))
 
-        self.ntot = len(self.srcDom)
+            # create entire domain partition
+            part = Partition(self.ndims)
+
+            # iterate over the unit displacements
+            for i in range(len(inds)):
+
+                # unit displacement
+                du = dispUnits[i]
+
+                # axis index for this unit displacement
+                loc = nonZeroLocs[i]
+
+                # decide if it will be a shift or an extract 
+                if inds[i] == 0:
+                    part = part.shift(du)
+                else:
+                    part = part.extract(du)
+
+            self.partitions.append(part)
+
+        # number of partitions
+        self.numParts = len(self.partitions)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        if self.index < self.ntot - 1:
+        if self.index < self.numParts - 1:
             self.index += 1
             return self
         else:
@@ -77,28 +86,20 @@ class DomainPartitionIter:
     def next(self):
         return self.__next__()
 
-    def getSrcPartition(self):
-        return self.srcDom[self.index]
-
-    def getDstPartition(self):
+    def getPartition(self):
         """
+        Get the current partition
+        @return object
         """
-        return self.dstDom[self.index]
+        return self.partitions[self.index]
 
-    def getRemoteRank(self):
-        return self.remoteRk[self.index]
-
-    def getWindowId(self):
-        return self.getStringFromPartition(self.srcDom[self.index].getSlice())
-
-    def getStringFromPartition(self, partition):
+    def getStringPartition(self):
         """
-        Get the string representation of the partition
-        @param partition a sequence of python slice objects
+        Get the string representation of the current partition
         @return string like ":-1,0:2"
         """
         res = ''
-        for s in partition:
+        for s in self.partitions[self.index].getSlice():
             start = ''
             stop = ''
             if s.start is not None:
@@ -111,34 +112,39 @@ class DomainPartitionIter:
 
 ######################################################################################################
 def test0d():
-    nprocs = 1
-    decomp = CubeDecomp(nprocs, dims=[])
-    dmi = DomainPartitionIter(disp=(), decomp=decomp, myRank=0, periodic=[])
-    for d in dmi:
-        print('test0d: getSrcPartition => {}'.format(d.getSrcPartition()))
+    print('='*40)
+    for disp in (),:
+        print('test0d: disp = {}'.format(disp))
+        dmi = DomainPartitionIter(disp=disp)
+        for d in dmi:
+            print('    partition {}'.format(d.getStringPartition()))
 
 def test1d():
-    nprocs = 1
-    decomp = CubeDecomp(nprocs, dims=[2])
-    dmi = DomainPartitionIter(disp=(1,), decomp=decomp, myRank=0, periodic=[True])
-    for d in dmi:
-        print('test1d: getSrcPartition => {}'.format(d.getSrcPartition()))
+    print('='*40)
+    for disp in (1,), (-1,):
+        print('test1d: disp = {}'.format(disp))
+        dmi = DomainPartitionIter(disp=disp)
+        for d in dmi:
+            print('    partition {}'.format(d.getStringPartition()))
 
 def test2d():
-    nprocs = 1
-    decomp = CubeDecomp(nprocs, dims=[2, 3])
-    for disp in (0, 0), (0, 1): #(1, 1),: #(0, 0), (0, 1), (1, 1):
-        print('='*40)
+    print('='*40)
+    for disp in (0, 0), (0, 1), (1, 1),:
         print('test2d: disp = {}'.format(disp))
-        dmi = DomainPartitionIter(disp=disp, decomp=decomp, myRank=0, periodic=[True, False])
+        dmi = DomainPartitionIter(disp=disp)
         for d in dmi:
-            print('    src partition {}'.format(d.getSrcPartition()))
-            print('    dst partition {}'.format(d.getDstPartition()))
-            print('    remote rank   {}'.format(d.getRemoteRank()))
-            print('    window Id     {}'.format(d.getWindowId()))
-            print('-'*20)
+            print('    partition {}'.format(d.getStringPartition()))
+
+def test3d():
+    print('='*40)
+    for disp in (0, 0, 0), (0, 0, 1), (1, 0, -1), (-1, -1, -1),:
+        print('test3d: disp = {}'.format(disp))
+        dmi = DomainPartitionIter(disp=disp)
+        for d in dmi:
+            print('    partition {}'.format(d.getStringPartition()))
 
 if __name__ == '__main__':
-    #test0d()
-    #test1d()
+    test0d()
+    test1d()
     test2d()
+    test3d()
