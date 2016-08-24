@@ -6,7 +6,7 @@ import numpy
 # internal dependencies
 from pnumpy import Partition
 from pnumpy import MultiArrayIter
-from pnumpy import CubeDecomp
+
 
 class DomainPartitionIter:
 
@@ -25,11 +25,11 @@ class DomainPartitionIter:
         nonZeroLocs = []
         for i in range(self.ndims):
             if disp[i] != 0:
-               nonZeroLocs.append(i) 
+                nonZeroLocs.append(i)
 
-        # list of unit displacements, all combinations of 
-        # vectors pointing in the diection of dispo. Eg 
-        # if disp =  (1, 0, -1) then dispUnits = 
+        # list of unit displacements, all combinations of
+        # vectors pointing in the diection of dispo. Eg
+        # if disp =  (1, 0, -1) then dispUnits should be
         # [(1, 0, 0), (0, 0, -1)]
         dispUnits = []
         for loc in nonZeroLocs:
@@ -61,7 +61,7 @@ class DomainPartitionIter:
                 # axis index for this unit displacement
                 loc = nonZeroLocs[i]
 
-                # decide if it will be a shift or an extract 
+                # decide if it will be a shift or an extract
                 if inds[i] == 0:
                     part = part.shift(du)
                 else:
@@ -110,14 +110,15 @@ class DomainPartitionIter:
         return res
 
 
-######################################################################################################
+##############################################################################
 def test0d():
     print('='*40)
-    for disp in (),:
+    for disp in (), :
         print('test0d: disp = {}'.format(disp))
         dmi = DomainPartitionIter(disp=disp)
         for d in dmi:
             print('    partition {}'.format(d.getStringPartition()))
+
 
 def test1d():
     print('='*40)
@@ -127,17 +128,19 @@ def test1d():
         for d in dmi:
             print('    partition {}'.format(d.getStringPartition()))
 
+
 def test2d():
     print('='*40)
-    for disp in (0, 0), (0, 1), (1, 1),:
+    for disp in (0, 0), (0, 1), (1, 1):
         print('test2d: disp = {}'.format(disp))
         dmi = DomainPartitionIter(disp=disp)
         for d in dmi:
             print('    partition {}'.format(d.getStringPartition()))
 
+
 def test3d():
     print('='*40)
-    for disp in (0, 0, 0), (0, 0, 1), (1, 0, -1), (-1, -1, -1),:
+    for disp in (0, 0, 0), (0, 0, 1), (1, 0, -1), (-1, -1, -1):
         print('test3d: disp = {}'.format(disp))
         dmi = DomainPartitionIter(disp=disp)
         for d in dmi:
