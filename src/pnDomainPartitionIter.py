@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # external dependencies
+import numpy
 
 # internal dependencies
 from pnumpy import Partition
@@ -19,7 +20,7 @@ class DomainPartitionIter:
         """
         self.disp = disp
         self.ndims = len(disp)
-        self.index = 0
+        self.index = -1
 
         # determine the locations of the non-zero displacement values
         nonZeroLocs = []
@@ -27,55 +28,40 @@ class DomainPartitionIter:
             if disp[i] != 0:
                nonZeroLocs.append(i) 
 
-        # list of unit displacements, ie all the displacements along the 
-        # non-zero values of disp and their cross directions. For instance
-        # if disp = (1, 0, -1) then dispUnits = [(0, 0, 0), (1, 0, 0),
-        # (0, 0, -1), (1, 0, -1)]
+        # list of unit displacements, all elements are 0 except one
         dispUnits = []
-        for it in MultiArrayIter([2] * len(nonZeroLocs)):
-            # inds are the indices that are active (1)/passive (0)
-            inds = it.getIndices()
+        for loc in nonZeroLocs:
             du = [0] * self.ndims
-            for i in range(len(nonZeroLocs)):
-                k = nonZeroLocs[i]
-                du[k] = inds[i] * disp[k]
-            dispUnits.append(du)
-        print('dispUnits = {}'.format(dispUnits))
+            du[loc] = disp[loc]
+            dispUnits.append(numpy.array(du))
+        #print(dispUnits)
 
-        # the source/destination ellipses and remote ranks
         self.srcDom = []
         self.dstDom = []
         self.remoteRk = []
-        for du in dispUnits:
-
-            # the negative of du
-            nu = [-d for d in du]
-
+        for it in MultiArrayIter([2] * len(nonZeroLocs)):
+            # inds refer to non-zero indices of disp that require extract (1)/shift (0) operation
+            inds = it.getIndices()
             sDom = Partition(self.ndims)
             dDom = Partition(self.ndims)
-            rk = None
-            numNonZeros = 0
-            for i in range(self.ndims):
-                # skip if disp is zero in this direction
-                if disp[i] == 0:
-                    continue
-
-                numNonZeros += 1
-                if du[i] == 0:
-                    # shift
+            dirct = [0] * self.ndims
+            for i in range(len(inds)):
+                du = dispUnits[i]
+                loc = nonZeroLocs[i]
+                if inds[i] == 0:
                     sDom = sDom.shift(du)
-                    dDom = dDom.shift(nu)
+                    dDom = dDom.shift(-du)
                 else:
-                    # extract
+                    dirct[loc] = -disp[loc]
                     sDom = sDom.extract(du)
-                    dDom = dDom.extract(nu)
-            if numNonZeros > 0:
-                rk = decomp.getNeighborProc(myRank, du, periodic=periodic)
-            self.remoteRk.append(rk)
+                    dDom = dDom.extract(-du)
             self.srcDom.append(sDom)
             self.dstDom.append(dDom)
+            rk = decomp.getNeighborProc(myRank, dirct, periodic=periodic)
+            self.remoteRk.append(rk)
+            print('...inds = {0} sDom = {1} dDom = {2} remote rank = {3}'.format(inds, sDom.getSlice(), dDom.getSlice(), rk))
 
-        self.ntot = len(dispUnits)
+        self.ntot = len(self.srcDom)
 
     def __iter__(self):
         return self
@@ -141,7 +127,7 @@ def test1d():
 def test2d():
     nprocs = 1
     decomp = CubeDecomp(nprocs, dims=[2, 3])
-    for disp in (1, 1),: #(0, 0), (0, 1), (1, 1):
+    for disp in (0, 0), (0, 1): #(1, 1),: #(0, 0), (0, 1), (1, 1):
         print('='*40)
         print('test2d: disp = {}'.format(disp))
         dmi = DomainPartitionIter(disp=disp, decomp=decomp, myRank=0, periodic=[True, False])
