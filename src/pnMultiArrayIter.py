@@ -112,6 +112,14 @@ class MultiArrayIter:
         return reduce(operator.and_, [0 <= inds[d] < self.dims[d]
                                       for d in range(self.ndims)], True)
 
+    def getNumberOfElements(self):
+        """
+        Get the number of elements
+        @return number
+        """
+        return self.ntot
+
+
 ######################################################################
 
 
