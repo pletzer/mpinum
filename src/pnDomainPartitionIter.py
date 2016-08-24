@@ -40,6 +40,7 @@ class DomainPartitionIter:
                 k = nonZeroLocs[i]
                 du[k] = inds[i] * disp[k]
             dispUnits.append(du)
+        print('dispUnits = {}'.format(dispUnits))
 
         # the source/destination ellipses and remote ranks
         self.srcDom = []
@@ -55,15 +56,19 @@ class DomainPartitionIter:
             rk = None
             numNonZeros = 0
             for i in range(self.ndims):
-                if disp[i] != 0:
-                    numNonZeros += 1
-                    if du[i] == 0:
-                        # shift
-                        sDom = sDom.shift(du)
-                        dDom = dDom.shift(nu)
-                    else:
-                        sDom = sDom.extract(du)
-                        dDom = dDom.extract(nu)
+                # skip if disp is zero in this direction
+                if disp[i] == 0:
+                    continue
+
+                numNonZeros += 1
+                if du[i] == 0:
+                    # shift
+                    sDom = sDom.shift(du)
+                    dDom = dDom.shift(nu)
+                else:
+                    # extract
+                    sDom = sDom.extract(du)
+                    dDom = dDom.extract(nu)
             if numNonZeros > 0:
                 rk = decomp.getNeighborProc(myRank, du, periodic=periodic)
             self.remoteRk.append(rk)
@@ -98,7 +103,7 @@ class DomainPartitionIter:
         return self.remoteRk[self.index]
 
     def getWindowId(self):
-        return self.getStringFromPartition(self.dstDom[self.index])
+        return self.getStringFromPartition(self.srcDom[self.index].getSlice())
 
     def getStringFromPartition(self, partition):
         """
@@ -136,15 +141,18 @@ def test1d():
 def test2d():
     nprocs = 1
     decomp = CubeDecomp(nprocs, dims=[2, 3])
-    for disp in (0, 0), (0, 1), (1, 1):
+    for disp in (1, 1),: #(0, 0), (0, 1), (1, 1):
+        print('='*40)
         print('test2d: disp = {}'.format(disp))
         dmi = DomainPartitionIter(disp=disp, decomp=decomp, myRank=0, periodic=[True, False])
         for d in dmi:
             print('    src partition {}'.format(d.getSrcPartition()))
             print('    dst partition {}'.format(d.getDstPartition()))
             print('    remote rank   {}'.format(d.getRemoteRank()))
+            print('    window Id     {}'.format(d.getWindowId()))
+            print('-'*20)
 
 if __name__ == '__main__':
-    test0d()
-    test1d()
+    #test0d()
+    #test1d()
     test2d()
