@@ -86,6 +86,19 @@ class DomainPartitionIter:
     def next(self):
         return self.__next__()
 
+    def getNumberOfPartitions(self):
+        """
+        Get the number of partitions
+        @return number
+        """
+        return self.numParts
+
+    def reset(self):
+        """
+        Reset counter
+        """
+        self.index = -1
+
     def getPartition(self):
         """
         Get the current partition

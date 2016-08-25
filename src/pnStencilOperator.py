@@ -9,7 +9,10 @@ from mpi4py import MPI
 import numpy
 
 # internal dependencies
-from pnumpy import gdaZeros, Partition, MultiArrayIter
+from pnumpy import gdaZeros
+from pnumpy import Partition
+from pnumpy import MultiArrayIter
+from pnumpy import DomainPartitionIter
 
 
 class StencilOperator:
@@ -25,30 +28,23 @@ class StencilOperator:
         self.ndims = decomp.getNumDims()
 
         # this process's MPI rank
-        myRank = comm.Get_rank()
+        self.myRank = comm.Get_rank()
+        self.comm = comm
 
-        # stencil, by default Laplacian, keep zero weight
-        # branches
-        for it in MultiArrayIter([3] * self.ndims):
-            disp = tuple(e - 1 for e in it.getIndices()])
-            self.stencil[disp] = 0.0
-            numNonZero = self.getNumNonZero(disp) 
-            if numNonZero == 1:
-                self.stencil[disp] = 1.0
-            elif numNonZero == 0:
-                self.stencil[disp] = -4.0
+        # defaul stencil is empty
+        self.stencil = {}
 
+        # partition logic, initially empty
         self.dpis = {}
-        for disp in self.stencil:
-            self.dpsi[disp] = DomainPartitionIter(disp, decomp)
 
-    def setStencilWeight(self, disp):
+    def addStencilBranch(self, disp, weight):
         """
         Set or overwrite the stencil weight for the given direction
         @param disp displacement vector
         @param weight stencil weight
         """
         self.stencil[disp] = weight
+        self.__setPartionLogic(disp)
 
     def removeStencilBranch(self, disp):
         """
@@ -58,33 +54,90 @@ class StencilOperator:
         del self.stencil[disp]
         del self.dpsi[disp]
 
+    def __setPartionLogic(self, disp):
+
+        sdisp = str(disp)
+
+        srcDp = DomainPartitionIter(disp)
+        dstDp = DomainPartitionIter([-d for d in disp])
+
+        srcs = [d.getSlice() for d in srcDp]
+        dsts = [d.getSlice() for d in dstDp]
+
+        srcDp.reset()
+        remoteRanks = [decomp.getRemoteRank(self.myRank, part.getDirection(), 
+                                                periodic=self.periodic) \
+                       for part in srcDp]
+            
+        srcDp.reset()
+        remoteWinIds = [sdisp + '[' + part.getStringPartition() + ']' \
+                        for part in srcDp]
+
+        self.dpis[disp] = {
+            'srcs': srcs,
+            'dsts': dsts,
+            'remoteRanks': remoteRanks,
+            'remoteWinIds': remoteWinIds,
+        }
+
+
     def apply(self, localArray):
         """
-        Apply Laplacian stencil to data
+        Apply stencil to data
         @param localArray local array
         @return new array on local proc
         """
 
         # input dist array
-        inp = gdaZeros(localArray.shape, localArray.dtype, numGhosts=1)
+        inp = daZeros(localArray.shape, localArray.dtype)
+        inp.setComm(self.comm)
+
         # output array
         out = numpy.zeros(localArray.shape, localArray.dtype)
 
+        # expose the dist array windows
+        for disp, dpi in self.dpis.items():
+
+            sdisp = str(disp)
+
+            srcs = dpi['srcs']
+            remoteWinIds = dpi['remoteWinIds']
+            numParts = len(srcs)
+            for i in range(numParts):
+                inp.expose(srcs[i], winID=remoteWinIds[i])
+
+        # apply the stencil
         for disp, weight in self.stencil.items():
+
             dpi = self.dpis[disp]
-            for it in dpi:
-                srcPart = it.getSrcPartition()
-                dstPart = it.getDstPartition()
-                remoteRk = it.getRemoteRank()
-                if remoteRk is None:
-                    # local, no communication
-                    out[dstPart] += weight * inp[srcPart]
-                else:
-                    winId = it.getWindowId()
-                    if winId is not None:
-                        out[dstPart] += weight * inp.getData(remoteRk, winID)
+
+            dpi = self.dpis[disp]
+
+            srcs = dpi['srcs']
+            dsts = dpi['dsts']
+            remoteRanks = dpi['remoteRanks']
+            remoteWinIds = dpi['remoteWinIds']
+            numParts = len(srcs)
+            for i in range(numParts):
+                srcSlce = srcs[i]
+                dstSlce = dsts[i]
+                remoteRank = remoteRanks[i]
+                remoteWinId = remoteWinIds[i]
+
+                # now apply the stencil
+                out[dstSlce] += weight * inp.getData(remoteRank, remoteWinId)
 
         # some implementations require this
         inp.free()
 
         return out
+
+##############################################################################
+
+
+def test1d():
+    so = StencilOperator(decomp, periodic=[True])
+
+
+if __name__ == '__main__':
+    test1d()
