@@ -9,10 +9,11 @@ from mpi4py import MPI
 import numpy
 
 # internal dependencies
-from pnumpy import gdaZeros
+from pnumpy import daZeros
 from pnumpy import Partition
 from pnumpy import MultiArrayIter
 from pnumpy import DomainPartitionIter
+from pnumpy import CubeDecomp
 
 
 class StencilOperator:
@@ -30,6 +31,8 @@ class StencilOperator:
         # this process's MPI rank
         self.myRank = comm.Get_rank()
         self.comm = comm
+        self.decomp = decomp
+        self.periodic = periodic
 
         # defaul stencil is empty
         self.stencil = {}
@@ -61,12 +64,12 @@ class StencilOperator:
         srcDp = DomainPartitionIter(disp)
         dstDp = DomainPartitionIter([-d for d in disp])
 
-        srcs = [d.getSlice() for d in srcDp]
-        dsts = [d.getSlice() for d in dstDp]
+        srcs = [d.getPartition().getSlice() for d in srcDp]
+        dsts = [d.getPartition().getSlice() for d in dstDp]
 
         srcDp.reset()
-        remoteRanks = [decomp.getRemoteRank(self.myRank, part.getDirection(), 
-                                                periodic=self.periodic) \
+        remoteRanks = [self.decomp.getNeighborProc(self.myRank, part.getDirection(), 
+                                                   periodic=self.periodic) \
                        for part in srcDp]
             
         srcDp.reset()
@@ -136,7 +139,15 @@ class StencilOperator:
 
 
 def test1d():
+    rk = MPI.COMM_WORLD.Get_rank()
+    sz = MPI.COMM_WORLD.Get_size()
+    dims = (3,)
+    decomp = CubeDecomp(nprocs=sz, dims=dims)
     so = StencilOperator(decomp, periodic=[True])
+    so.addStencilBranch((1,), 2.0)
+    inputData = (rk + 1) * numpy.ones(dims, numpy.float32)
+    outputData = so.apply(inputData)
+    print('[{0}] outputData = {1}'.format(rk, outputData))
 
 
 if __name__ == '__main__':

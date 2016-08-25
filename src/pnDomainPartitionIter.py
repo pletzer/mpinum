@@ -40,6 +40,9 @@ class DomainPartitionIter:
         # list of partitions
         self.partitions = []
 
+        # list of directions
+        self.directions = []
+
         # for each dispUnits apply either shift or extract operation.
         # Number of partitions is 2**len(dispUnits)
         for it in MultiArrayIter([2] * len(dispUnits)):
@@ -51,6 +54,8 @@ class DomainPartitionIter:
 
             # create entire domain partition
             part = Partition(self.ndims)
+
+            drctn = numpy.zeros(self.ndims, numpy.int32)
 
             # iterate over the unit displacements
             for i in range(len(inds)):
@@ -66,8 +71,10 @@ class DomainPartitionIter:
                     part = part.shift(du)
                 else:
                     part = part.extract(du)
+                    drctn += numpy.array([(d != 0)*d/abs(d) for d in du])
 
             self.partitions.append(part)
+            self.directions.append(drctn)
 
         # number of partitions
         self.numParts = len(self.partitions)
@@ -98,6 +105,12 @@ class DomainPartitionIter:
         Reset counter
         """
         self.index = -1
+
+    def getDirection(self):
+        """
+        Get the current direction pointing to the neighbor rank
+        """
+        return self.directions[self.index]
 
     def getPartition(self):
         """
