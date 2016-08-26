@@ -140,14 +140,28 @@ class StencilOperator:
 ##############################################################################
 
 
-def test1d(dtyp):
+def test1d(disp, dtyp):
     rk = MPI.COMM_WORLD.Get_rank()
     sz = MPI.COMM_WORLD.Get_size()
     dims = (3,)
     globalDims = (3*sz,)
     decomp = CubeDecomp(nprocs=sz, dims=globalDims)
     so = StencilOperator(decomp, periodic=[True])
-    so.addStencilBranch((1,), 2)
+    so.addStencilBranch(disp, 2)
+    inputData = (rk + 1) * numpy.ones(dims, dtyp)
+    outputData = so.apply(inputData)
+    print('[{0}] inputData = {1}'.format(rk, inputData))
+    print('[{0}] outputData = {1}'.format(rk, outputData))
+    MPI.COMM_WORLD.Barrier()
+
+def test2d(disp, dtyp):
+    rk = MPI.COMM_WORLD.Get_rank()
+    sz = MPI.COMM_WORLD.Get_size()
+    dims = (3, 3)
+    globalDims = (3*sz, sz)
+    decomp = CubeDecomp(nprocs=sz, dims=globalDims)
+    so = StencilOperator(decomp, periodic=[True, True])
+    so.addStencilBranch(disp, 2)
     inputData = (rk + 1) * numpy.ones(dims, dtyp)
     outputData = so.apply(inputData)
     print('[{0}] inputData = {1}'.format(rk, inputData))
@@ -160,16 +174,25 @@ if __name__ == '__main__':
     myRank = MPI.COMM_WORLD.Get_rank()
 
     if myRank == 0: print('== test1d int16 ==')
-    test1d(numpy.int16)
+    disp = (1,)
+    test1d(disp, numpy.int16)
 
     if myRank == 0: print('== test1d int32 ==')
-    test1d(numpy.int32)
+    disp = (1,)
+    test1d(disp, numpy.int32)
 
     if myRank == 0: print('== test1d int64 ==')
-    test1d(numpy.int64)
+    disp = (-1,)
+    test1d(disp, numpy.int64)
 
     if myRank == 0: print('== test1d float32 ==')
-    test1d(numpy.float32)
+    disp = (-1,)
+    test1d(disp, numpy.float32)
 
     if myRank == 0: print('== test1d float64 ==')
-    test1d(numpy.float64)
+    disp = (-1,)
+    test1d(disp, numpy.float64)
+
+    if myRank == 0: print('== test2d float32 ==')
+    disp = (1, 0)
+    test2d(disp, numpy.float32)
