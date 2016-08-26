@@ -82,8 +82,6 @@ class StencilOperator:
             'remoteRanks': remoteRanks,
             'remoteWinIds': remoteWinIds,
         }
-        print('>>> [{0}] remoteRanks = {1}'.format(self.myRank, remoteRanks))
-        print('>>> [{0}] self.decomp.getNeighborProc(self.myRank, (1,), self.periodic) = {1}'.format(self.myRank, self.decomp.getNeighborProc(self.myRank, (1,), self.periodic)))
 
     def apply(self, localArray):
         """
@@ -94,6 +92,7 @@ class StencilOperator:
 
         # input dist array
         inp = daZeros(localArray.shape, localArray.dtype)
+        inp[...] = localArray
         inp.setComm(self.comm)
 
         # output array
@@ -108,7 +107,6 @@ class StencilOperator:
             remoteWinIds = dpi['remoteWinIds']
             numParts = len(srcs)
             for i in range(numParts):
-                print('--- [{0}] exposing window id = {1}'.format(self.myRank, remoteWinIds[i]))
                 inp.expose(srcs[i], winID=remoteWinIds[i])
 
         # apply the stencil
@@ -130,8 +128,12 @@ class StencilOperator:
                 remoteWinId = remoteWinIds[i]
 
                 # now apply the stencil
-                print('.... [{0}] apply stencil for dstSlce = {1} weight={2} remoteRank={3}'.format(self.myRank, dstSlce, weight, remoteRank))
-                out[dstSlce] += weight * inp.getData(remoteRank, remoteWinId)
+                if remoteRank == self.myRank:
+                    # local updates
+                    out[dstSlce] += weight * inp[srcSlce]
+                else:
+                
+                    out[dstSlce] += weight * inp.getData(remoteRank, remoteWinId)
 
         # some implementations require this
         inp.free()
