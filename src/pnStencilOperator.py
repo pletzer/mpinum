@@ -10,8 +10,6 @@ import numpy
 
 # internal dependencies
 from pnumpy import daZeros
-from pnumpy import Partition
-from pnumpy import MultiArrayIter
 from pnumpy import DomainPartitionIter
 from pnumpy import CubeDecomp
 
@@ -68,12 +66,13 @@ class StencilOperator:
         dsts = [d.getPartition().getSlice() for d in dstDp]
 
         srcDp.reset()
-        remoteRanks = [self.decomp.getNeighborProc(self.myRank, part.getDirection(), 
-                                                   periodic=self.periodic) \
+        remoteRanks = [self.decomp.getNeighborProc(self.myRank,
+                                                   part.getDirection(),
+                                                   periodic=self.periodic)
                        for part in srcDp]
-            
+
         srcDp.reset()
-        remoteWinIds = [sdisp + '[' + part.getStringPartition() + ']' \
+        remoteWinIds = [sdisp + '[' + part.getStringPartition() + ']'
                         for part in srcDp]
 
         self.dpis[disp] = {
@@ -100,8 +99,6 @@ class StencilOperator:
 
         # expose the dist array windows
         for disp, dpi in self.dpis.items():
-
-            sdisp = str(disp)
 
             srcs = dpi['srcs']
             remoteWinIds = dpi['remoteWinIds']
@@ -130,10 +127,10 @@ class StencilOperator:
                 # now apply the stencil
                 if remoteRank == self.myRank:
                     # local updates
-                    out[dstSlce] += weight * inp[srcSlce]
+                    out[dstSlce] += weight*inp[srcSlce]
                 else:
-                
-                    out[dstSlce] += weight * inp.getData(remoteRank, remoteWinId)
+                    # remote fetch
+                    out[dstSlce] += weight*inp.getData(remoteRank, remoteWinId)
 
         # some implementations require this
         inp.free()
@@ -143,19 +140,36 @@ class StencilOperator:
 ##############################################################################
 
 
-def test1d():
+def test1d(dtyp):
     rk = MPI.COMM_WORLD.Get_rank()
     sz = MPI.COMM_WORLD.Get_size()
     dims = (3,)
     globalDims = (3*sz,)
     decomp = CubeDecomp(nprocs=sz, dims=globalDims)
     so = StencilOperator(decomp, periodic=[True])
-    so.addStencilBranch((1,), 2.0)
-    inputData = (rk + 1) * numpy.ones(dims, numpy.float32)
+    so.addStencilBranch((1,), 2)
+    inputData = (rk + 1) * numpy.ones(dims, dtyp)
     outputData = so.apply(inputData)
     print('[{0}] inputData = {1}'.format(rk, inputData))
     print('[{0}] outputData = {1}'.format(rk, outputData))
+    MPI.COMM_WORLD.Barrier()
 
 
 if __name__ == '__main__':
-    test1d()
+
+    myRank = MPI.COMM_WORLD.Get_rank()
+
+    if myRank == 0: print('== test1d int16 ==')
+    test1d(numpy.int16)
+
+    if myRank == 0: print('== test1d int32 ==')
+    test1d(numpy.int32)
+
+    if myRank == 0: print('== test1d int64 ==')
+    test1d(numpy.int64)
+
+    if myRank == 0: print('== test1d float32 ==')
+    test1d(numpy.float32)
+
+    if myRank == 0: print('== test1d float64 ==')
+    test1d(numpy.float64)
