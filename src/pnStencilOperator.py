@@ -82,7 +82,8 @@ class StencilOperator:
             'remoteRanks': remoteRanks,
             'remoteWinIds': remoteWinIds,
         }
-
+        print('>>> [{0}] remoteRanks = {1}'.format(self.myRank, remoteRanks))
+        print('>>> [{0}] self.decomp.getNeighborProc(self.myRank, (1,), self.periodic) = {1}'.format(self.myRank, self.decomp.getNeighborProc(self.myRank, (1,), self.periodic)))
 
     def apply(self, localArray):
         """
@@ -107,6 +108,7 @@ class StencilOperator:
             remoteWinIds = dpi['remoteWinIds']
             numParts = len(srcs)
             for i in range(numParts):
+                print('--- [{0}] exposing window id = {1}'.format(self.myRank, remoteWinIds[i]))
                 inp.expose(srcs[i], winID=remoteWinIds[i])
 
         # apply the stencil
@@ -128,6 +130,7 @@ class StencilOperator:
                 remoteWinId = remoteWinIds[i]
 
                 # now apply the stencil
+                print('.... [{0}] apply stencil for dstSlce = {1} weight={2} remoteRank={3}'.format(self.myRank, dstSlce, weight, remoteRank))
                 out[dstSlce] += weight * inp.getData(remoteRank, remoteWinId)
 
         # some implementations require this
@@ -142,11 +145,13 @@ def test1d():
     rk = MPI.COMM_WORLD.Get_rank()
     sz = MPI.COMM_WORLD.Get_size()
     dims = (3,)
-    decomp = CubeDecomp(nprocs=sz, dims=dims)
+    globalDims = (3*sz,)
+    decomp = CubeDecomp(nprocs=sz, dims=globalDims)
     so = StencilOperator(decomp, periodic=[True])
     so.addStencilBranch((1,), 2.0)
     inputData = (rk + 1) * numpy.ones(dims, numpy.float32)
     outputData = so.apply(inputData)
+    print('[{0}] inputData = {1}'.format(rk, inputData))
     print('[{0}] outputData = {1}'.format(rk, outputData))
 
 

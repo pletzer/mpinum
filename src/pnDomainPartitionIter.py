@@ -71,7 +71,7 @@ class DomainPartitionIter:
                     part = part.shift(du)
                 else:
                     part = part.extract(du)
-                    drctn += numpy.array([(d != 0)*d/abs(d) for d in du])
+                    drctn += numpy.maximum(-1, numpy.minimum(1, du))
 
             self.partitions.append(part)
             self.directions.append(drctn)
