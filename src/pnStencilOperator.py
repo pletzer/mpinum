@@ -44,7 +44,7 @@ class StencilOperator:
         @param disp displacement vector
         @param weight stencil weight
         """
-        self.stencil[disp] = weight
+        self.stencil[tuple(disp)] = weight
         self.__setPartionLogic(disp)
 
     def removeStencilBranch(self, disp):

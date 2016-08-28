@@ -11,3 +11,4 @@ from pnumpy.pnCubeDecomp import CubeDecomp
 from pnumpy.pnPartition import Partition
 from pnumpy.pnDomainPartitionIter import DomainPartitionIter
 from pnumpy.pnLaplacian import Laplacian
+from pnumpy.pnStencilOperator import StencilOperator
