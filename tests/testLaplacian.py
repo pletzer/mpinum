@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Testing Laplacian discretization in 1d
+Testing Laplacian discretization
 @author Alexander Pletzer
 """
 
@@ -20,7 +20,7 @@ class TestLaplacian(unittest.TestCase):
     # MPI rank
     self.rk = MPI.COMM_WORLD.Get_rank()
 
-  def Xtest1d(self):
+  def test1d(self):
 
     n = 8
 
@@ -68,7 +68,7 @@ class TestLaplacian(unittest.TestCase):
         self.assertLessEqual(abs(chksum - -28.25), 1.e-10)
 
 
-  def Xtest2d(self):
+  def test2d(self):
 
     n = 8
 
@@ -119,7 +119,7 @@ class TestLaplacian(unittest.TestCase):
         print('test2d check sum = {}'.format(chksum))
         self.assertLessEqual(abs(chksum - -198.0), 1.e-10)
 
-  def Xtest2d_1domain(self):
+  def test2d_1domain(self):
 
     n = 8
 

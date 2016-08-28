@@ -110,7 +110,7 @@ class TestLaplacian(unittest.TestCase):
         for pm in (-1, 1):
             disp[i] = pm
             op.addStencilBranch(tuple(disp), 1.0)
-    op.addStencilBranch([0]*ndims, -2*ndims)
+    op.addStencilBranch(tuple([0]*ndims), -2*ndims)
 
     # set the input function
     xx = numpy.outer(axes[0], numpy.ones((nsLocal[1],)))
@@ -216,7 +216,7 @@ class TestLaplacian(unittest.TestCase):
         for pm in (-1, 1):
             disp[i] = pm
             op.addStencilBranch(tuple(disp), 1.0)
-    op.addStencilBranch([0]*ndims, -2*ndims)
+    op.addStencilBranch(tuple([0]*ndims), -2*ndims)
 
     # set the input function
     inp = numpy.zeros((iEnds[0] - iBegs[0], iEnds[1] - iBegs[1], iEnds[2] - iBegs[2]), numpy.float64)
