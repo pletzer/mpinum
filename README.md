@@ -13,6 +13,9 @@ a neighboring one. pnumpy is designed to work seamlessly with numpy's
 slicing operators ufunc, etc., making it easy to transition your code
 to a parallel computing environment.
 
+![alt tag](https://raw.githubusercontent.com/pletzer/pnumpy/master/pictures/exLaplacian3d.png)
+Speedup of 512^3 Laplacian on a 4 core desktop
+
 ## How to get pnumpy
 
 ```bash
