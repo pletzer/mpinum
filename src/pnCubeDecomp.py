@@ -73,12 +73,12 @@ class CubeDecomp:
         """
         Get the start/end indices for given processor rank
         @param procId processor rank
-        @return list of slices (or empty list if no valid decomp)
+        @return tuple of slices (or empty tuple if no valid decomp)
         """
         if self.proc2IndexSet:
-            return self.proc2IndexSet[procId]
+            return tuple(self.proc2IndexSet[procId])
         else:
-            return []
+            return ()
 
     def getNeighborProc(self, proc, offset, periodic=None):
         """
