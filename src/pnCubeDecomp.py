@@ -69,6 +69,16 @@ class CubeDecomp:
         """
         return self.decomp
 
+    def isValid(self):
+        """
+        Is decomposition valid? 
+        @return True/False
+        """
+        if self.decomp:
+            return True
+        else:
+            return False
+
     def getSlab(self, procId):
         """
         Get the start/end indices for given processor rank
