@@ -28,6 +28,7 @@ if len(sys.argv) > 2:
 
 nx, ny, nz = n, n, n
 if rk == 0:
+    print('Number of procs: {}'.format(sz))
     print('Number of cells nx, ny, nz = {0}, {1}, {2}'.format(nx, ny, nz))
     print('Number of times Laplacian operator is applied = {0}'.format(nTimes))
 

@@ -1,7 +1,7 @@
 # Example MPI LoadLeveler Job file
 # @ shell = /bin/bash
 #
-# @ job_name = testRma
+# @ job_name = exLaplacian3d
 #
 # @ job_type = parallel
 #
