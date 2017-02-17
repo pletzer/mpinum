@@ -1,7 +1,7 @@
 # Example MPI LoadLeveler Job file
 # @ shell = /bin/bash
 #
-# @ job_name = testRma
+# @ job_name = exLaplacian3d
 #
 # @ job_type = parallel
 #
@@ -23,6 +23,6 @@
 module load python/2.7.5
 export PYTHONPATH=/opt/niwa/mpi4py/AIX/2.0.0/lib/python2.7/site-packages/:$PYTHONPATH
 echo "Starting at `date`"
-poe python exLaplacian3d.py 256 10
+poe python exLaplacian3d.py 512 10
 echo "Ending at `date`"
 
