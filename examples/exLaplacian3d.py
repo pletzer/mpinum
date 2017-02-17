@@ -65,34 +65,20 @@ jBeg, jEnd = slab[1].start, slab[1].stop
 kBeg, kEnd = slab[2].start, slab[2].stop
 
 # set the input field
-f = numpy.zeros((nx, ny, nz), numpy.float32)
+x = xMin + dx*numpy.linspace(iBeg + 0.5, iEnd - 0.5, iEnd - iBeg)
+y = yMin + dy*numpy.linspace(jBeg + 0.5, jEnd - 0.5, jEnd - jBeg)
+z = zMin + dz*numpy.linspace(kBeg + 0.5, kEnd - 0.5, kEnd - kBeg)
 
-for i in range(iEnd - iBeg):
-    x = xMin + dx*(iBeg + i + 0.5)
-    for j in range(jEnd - jBeg):
-        y = yMin + dy*(jBeg + j + 0.5)
-        for k in range(kEnd - kBeg):
-            z = zMin + dz*(kBeg + k + 0.5)
-            f[i, j, k] = math.sin(math.pi*x) * math.cos(2*math.pi*y) * math.sin(8*math.pi*z)
+f = numpy.outer(numpy.outer(numpy.sin(numpy.pi*x), 
+                            numpy.cos(2*numpy.pi*y)), 
+                            numpy.sin(8*numpy.pi*z)).reshape((iEnd - iBeg, 
+                                                              jEnd - jBeg, 
+                                                              kEnd - kBeg))
 
 # compute the Laplacian
 lapl = pnumpy.Laplacian(dc, periodic=(True, True, True))
-time = MPI.Wtime()
 for i in range(nTimes):
-    if rk == 0:
-        print('.', end='')
     fout = lapl.apply(f)
-time = MPI.Wtime() - time
-if rk == 0:
-    print('')
-
-times = MPI.COMM_WORLD.gather(time, 0)
-if rk == 0:
-    minTime = min(times)
-    avgTime = numpy.sum(times)/float(sz)
-    maxTime = max(times)
-    print('Min/avg/max times: {0:.2f}/{1:.2f}/{2:.2f} s'.format(
-           minTime, avgTime, maxTime))
 
 # check
 localChkSum = fout.sum()
