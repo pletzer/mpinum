@@ -69,7 +69,7 @@ rk = MPI.COMM_WORLD.Get_rank()
 sz = MPI.COMM_WORLD.Get_size()
 
 # global domain sizes
-nxG, nyG = 64, 128
+nxG, nyG = 128, 256
 
 # domain decomposition
 dc = CubeDecomp(sz, (nxG, nyG))

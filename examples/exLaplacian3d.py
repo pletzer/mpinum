@@ -64,7 +64,7 @@ jBeg, jEnd = slab[1].start, slab[1].stop
 kBeg, kEnd = slab[2].start, slab[2].stop
 
 # set the input field
-f = numpy.zeros( (nx, ny, nz), numpy.float64 )
+f = numpy.zeros((nx, ny, nz), numpy.float32)
 
 for i in range(iEnd - iBeg):
     x = xMin + dx*(iBeg + i + 0.5)
@@ -72,7 +72,7 @@ for i in range(iEnd - iBeg):
         y = yMin + dy*(jBeg + j + 0.5)
         for k in range(kEnd - kBeg):
             z = zMin + dz*(kBeg + k + 0.5)
-            f[i, j, k] = math.sin(numpy.pi*x) * math.cos(2*numpy.pi*y)
+            f[i, j, k] = math.sin(math.pi*x) * math.cos(2*math.pi*y) * math.sin(8*math.pi*z)
 
 # compute the Laplacian
 lapl = pnumpy.Laplacian(dc, periodic=(True, True, True))

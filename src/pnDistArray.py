@@ -162,17 +162,21 @@ def distArrayFactory(BaseClass):
             @return array
             """
             iw = self.windows[winID]
+
             slce = iw['slice']
             dataSrc = iw['dataSrc']
             dataDst = iw['dataDst']
+
 
             # copy src data into buffer
             dataSrc[...] = self[slce]
 
             win = iw['dataWindow']
-            win.Fence(MPI.MODE_NOPUT | MPI.MODE_NOPRECEDE)
+            win.Fence(MPI.MODE_NOPRECEDE) #MPI.MODE_NOPUT | MPI.MODE_NOPRECEDE)
+
             if pe is not None:
                 win.Get([dataDst, self.dtypMPI], pe)
+
             win.Fence(MPI.MODE_NOSUCCEED)
 
             return dataDst
