@@ -32,6 +32,7 @@ def ghostedDistArrayFactory(BaseClass):
             # call the parent Ctor
             BaseClass.__init__(self, shape, dtype)
 
+
         def setNumberOfGhosts(self, numGhosts):
             """
             Set the width of the ghost halo
@@ -61,6 +62,7 @@ def ghostedDistArrayFactory(BaseClass):
                     # expose MPI window
                     self.expose(slab, winId)
 
+
         def getSlab(self, dim, slce):
             """
             Get slab. A slab is a multi-dimensional slice extending in
@@ -74,7 +76,9 @@ def ghostedDistArrayFactory(BaseClass):
 
             slab = [slice(0, shape[i]) for i in range(dim)] + \
                    [slce] + [slice(0, shape[i]) for i in range(dim+1, ndim)]
-            return slab
+
+            return tuple(slab)
+
 
         def getEllipsis(self, winID):
             """
@@ -91,6 +95,7 @@ def ghostedDistArrayFactory(BaseClass):
                 return self.windows[winID]['slice']
             else:
                 return None
+
 
     return GhostedDistArrayAny
 
