@@ -9,7 +9,7 @@ README = (HERE / "README.md").read_text()
 
 
 setup(name = 'pnumpy',
-      version = '1.4.1',
+      version = '1.4.2',
       description = 'A very lightweight implementation of distributed arrays',
       long_description = README,
       long_description_content_type="text/markdown",
