@@ -29,7 +29,7 @@ pnumpy requires:
  * python 2.7 or 3.5 or later
  * numpy, e.g. 1.10
  * MPI library (e.g. MPICH2 1.4.1p1 that comes with Anaconda)
- * mpi4py, e.g. 3.0.3s
+ * mpi4py, e.g. 3.0.3
 
 
 ```bash
