@@ -8,15 +8,15 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 
-setup(name = 'pnumpy',
+setup(name = 'mumpy',
       version = '1.4.2',
       description = 'A very lightweight implementation of distributed arrays',
       long_description = README,
       long_description_content_type="text/markdown",
       author = 'Alexander Pletzer',
       author_email = 'alexander@gokliya.net',
-      url = 'https://github.com/pletzer/pnumpy.git',
+      url = 'https://github.com/pletzer/mumpy.git',
       install_requires=['numpy', 'mpi4py'],
-      package_dir={'pnumpy': 'src'}, # the present directory maps to src 
-      packages = ['pnumpy'],
+      package_dir={'mumpy': 'src'}, # the present directory maps to src 
+      packages = ['mumpy'],
 )

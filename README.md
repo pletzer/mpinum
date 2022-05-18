@@ -1,30 +1,30 @@
-# pnumpy
+# mumpy
 Parallel computing in N dimensions made easy in Python
 
 ## Overview
 
-pnumpy is a very lightweight implementation of distributed arrays,
+mumpy is a very lightweight implementation of distributed arrays,
 which runs on architectures ranging from multi-core laptops to large
-MPI clusters.  pnumpy is based on numpy and mpi4py and supports arrays in
+MPI clusters.  mumpy is based on numpy and mpi4py and supports arrays in
 any number of dimensions. Processes can access remote data using a "getData" 
 method. This can be used to access neighbor ghost data but is more 
 flexible as it allows to access data from any process--not necessarily
-a neighboring one. pnumpy is designed to work seamlessly with numpy's 
+a neighboring one. mumpy is designed to work seamlessly with numpy's 
 slicing operators ufunc, etc., making it easy to transition your code
 to a parallel computing environment.
 
-![alt tag](https://raw.githubusercontent.com/pletzer/pnumpy/master/pictures/exLaplacian3d.png)
+![alt tag](https://raw.githubusercontent.com/pletzer/mumpy/master/pictures/exLaplacian3d.png)
 Speedup of 512^3 Laplacian on a 4 core desktop
 
-## How to get pnumpy
+## How to get mumpy
 
 ```bash
-git clone https://github.com/pletzer/pnumpy.git
+git clone https://github.com/pletzer/mumpy.git
 ```
 
-## How to build pnumpy
+## How to build mumpy
 
-pnumpy requires:
+mumpy requires:
 
  * python 2.7 or 3.5 or later
  * numpy, e.g. 1.10
@@ -44,16 +44,16 @@ sudo python setup.py install
 
 Alternatively you can use 
 ```python 
-pip install pnumpy
+pip install mumpy
 ```
 
 or
 
 ```python 
-pip install pnumpy --user
+pip install mumpy --user
 ```
 
-## How to test pnumpy
+## How to test mumpy
 
 Run any file under tests/, e.g.
 
@@ -62,7 +62,7 @@ cd tests
 mpiexec -n 4 python testDistArray.py
 ```
 
-## How to use pnumpy
+## How to use mumpy
 
 To run script myScript.py in parallel use
 
@@ -74,19 +74,19 @@ where numProcs is the number of processes.
 
 ### A lightweight extension to numpy arrays
 
-Think of pnumpy arrays as standard numpy arrays with additional data members and methods to access neighboring data. 
+Think of mumpy arrays as standard numpy arrays with additional data members and methods to access neighboring data. 
 
 To create a ghosted distributed array (gda) use:
 
 ```python
-from pnumpy import gdaZeros
+from mumpy import gdaZeros
 da = gdaZeros((4, 5), numpy.float32, numGhosts=1)
 ```
 
 The above creates a 4 x 5 float32 array filled with zeros -- the syntax should be familiar to anyone using 
 numpy arrays. 
 
-All numpy operations apply to pnumpy distributed arrays with no change and this includes slicing. 
+All numpy operations apply to mumpy distributed arrays with no change and this includes slicing. 
 Note that slicing operations are with respect to local array indices.
 
 In the above, _numGhosts_ describes the thickness of the halo region, i.e. the slice of 
@@ -102,7 +102,7 @@ For a 2D array, the halo can be broken into four regions:
  * da[:, :numGhosts] => south
  * da[:, -numGhosts:] => north
 
-(In n-dimensions there are 2n regions.) pnumpy identifies each halo region
+(In n-dimensions there are 2n regions.) mumpy identifies each halo region
  with a tuple: 
 
   * (-1, 0) => west
@@ -121,7 +121,7 @@ The above will work for any domain decomposition, not necessarily a regular one.
 uniform chunks of data, otherRk can be inferred from the local rank and an offset vector:
 
 ```python
-from pnumpy import CubeDecomp
+from mumpy import CubeDecomp
 decomp = CubeDecomp(numProcs, dims)
 ...
 otherRk = decomp.getNeighborProc(self, da.getMPIRank(), offset=(0, 1), periodic=(True, False))
@@ -136,7 +136,7 @@ local da.getMPIRank() rank lies at the boundary of the domain), then getNeighbor
 For the Laplacian stencil, one may consider using 
 
 ```python
-from pnumpy import Laplacian
+from mumpy import Laplacian
 lapl = Laplacian(decomp, periodic=(True, False))
 ```
 

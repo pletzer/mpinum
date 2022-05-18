@@ -1,2 +1,4 @@
-numpy == 1.19.*
+setuptools
+numpy
 mpi4py == 3.*
+pytest

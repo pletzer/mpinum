@@ -1,4 +1,4 @@
-import pnumpy
+import mumpy
 import numpy
 import unittest
 from mpi4py import MPI
@@ -6,7 +6,7 @@ from functools import reduce
 
 class TestDistArray(unittest.TestCase):
     """
-    Test pnumpy
+    Test mumpy
     """
 
     def setUp(self):
@@ -16,9 +16,9 @@ class TestDistArray(unittest.TestCase):
         """
         Test constructors
         """
-        da = pnumpy.daZeros( (2,3), numpy.float64 )
-        da = pnumpy.daOnes( (2,3), numpy.float64 )
-        da = pnumpy.daArray( [1,2,3] )
+        da = mumpy.daZeros( (2,3), numpy.float64 )
+        da = mumpy.daOnes( (2,3), numpy.float64 )
+        da = mumpy.daArray( [1,2,3] )
 
     def test1d_1(self):
         """
@@ -34,7 +34,7 @@ class TestDistArray(unittest.TestCase):
 
         # create the dist array
         n = 10
-        da = pnumpy.daZeros( (n,), dtyp )
+        da = mumpy.daZeros( (n,), dtyp )
         # expose the last element
         da.expose( slce=(slice(-1, None, None),), winID='left' )
         # set data
@@ -66,7 +66,7 @@ class TestDistArray(unittest.TestCase):
 
         # create the dist array
         n = 10
-        da = pnumpy.daZeros( (n,), dtyp )
+        da = mumpy.daZeros( (n,), dtyp )
         # expose the last element
         da.expose( slce=(slice(-1, None, None),), winID='left' )
         # set data
@@ -98,7 +98,7 @@ class TestDistArray(unittest.TestCase):
 
         # create the dist array
         n = 10
-        da = pnumpy.daZeros( (n,), dtyp )
+        da = mumpy.daZeros( (n,), dtyp )
         # expose the last element
         da.expose( slce=(slice(-1, None, None),), winID='left' )
         # set data
@@ -130,7 +130,7 @@ class TestDistArray(unittest.TestCase):
 
         # create the dist array
         n = 10
-        da = pnumpy.daZeros( (n,), dtyp )
+        da = mumpy.daZeros( (n,), dtyp )
         # expose the last element
         da.expose( slce=(slice(-1, None, None),), winID='left' )
         # set data
@@ -152,7 +152,7 @@ class TestDistArray(unittest.TestCase):
         
 
         # create the dist array, the sizes are local to each processor
-        da = pnumpy.daZeros( (2,3), numpy.float32 )
+        da = mumpy.daZeros( (2,3), numpy.float32 )
 
         # processor rank and number of processes
         rk = da.rk

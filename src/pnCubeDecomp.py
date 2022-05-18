@@ -7,7 +7,7 @@ Muti-dimensional domain decomposition.
 # standard modules
 import operator
 from functools import reduce
-from pnumpy.pnMultiArrayIter import MultiArrayIter
+from mumpy.pnMultiArrayIter import MultiArrayIter
 
 
 def getPrimeFactors(n):

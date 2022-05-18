@@ -1,4 +1,4 @@
-import pnumpy
+import mumpy
 import numpy
 import unittest
 from functools import reduce
@@ -6,7 +6,7 @@ from mpi4py import MPI
 
 class TestPNumpy(unittest.TestCase):
     """
-    Test pnumpy
+    Test mumpy
     """
 
     def setUp(self):
@@ -21,7 +21,7 @@ class TestPNumpy(unittest.TestCase):
 
         # create the ghosted dist array
         n = 10
-        da = pnumpy.gdaZeros( (n,), dtyp, numGhosts=1 )
+        da = mumpy.gdaZeros( (n,), dtyp, numGhosts=1 )
 
         # set data to process dependent value, 
         # da.rk is the mpi proc ID
@@ -50,7 +50,7 @@ class TestPNumpy(unittest.TestCase):
         """
 
         # create the dist array, the sizes are local to each processor
-        da = pnumpy.gdaZeros( (2,3), numpy.float32, numGhosts=1 )
+        da = mumpy.gdaZeros( (2,3), numpy.float32, numGhosts=1 )
 
         # processor rank and number of processes
         rk = da.rk
@@ -75,7 +75,7 @@ class TestPNumpy(unittest.TestCase):
         """
 
         # create the dist array, the sizes are local to each processor
-        da = pnumpy.gdaZeros( (2,3), numpy.float32, numGhosts=1 )
+        da = mumpy.gdaZeros( (2,3), numpy.float32, numGhosts=1 )
 
         # processor rank and number of processes
         rk = da.rk
@@ -104,8 +104,8 @@ class TestPNumpy(unittest.TestCase):
         """
         2d array, apply Laplacian, periodic along the two axes
         """
-        from pnumpy import CubeDecomp
-        from pnumpy import MultiArrayIter
+        from mumpy import CubeDecomp
+        from mumpy import MultiArrayIter
         import operator
         from math import sin, pi
 
@@ -136,8 +136,8 @@ class TestPNumpy(unittest.TestCase):
         nsLocal = numpy.array([s.stop - s.start for s in localSlices])
         
         # create the dist arrays
-        da = pnumpy.gdaZeros(nsLocal, numpy.float32, numGhosts=1)
-        laplacian = pnumpy.gdaZeros(nsLocal, numpy.float32, numGhosts=1)
+        da = mumpy.gdaZeros(nsLocal, numpy.float32, numGhosts=1)
+        laplacian = mumpy.gdaZeros(nsLocal, numpy.float32, numGhosts=1)
 
         # set the data
         for it in MultiArrayIter(nsLocal):

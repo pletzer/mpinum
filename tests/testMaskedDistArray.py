@@ -1,4 +1,4 @@
-import pnumpy
+import mumpy
 import numpy
 import unittest
 from mpi4py import MPI
@@ -18,9 +18,9 @@ class TestMaskedDistArray(unittest.TestCase):
         """
         mask = numpy.zeros( (2, 3), numpy.bool_ )
         mask[0, 0] = 0
-        da = pnumpy.mdaZeros( (2,3), numpy.float64, mask=mask )
-        da = pnumpy.mdaOnes( (2,3), numpy.float64, mask=mask )
-        da = pnumpy.mdaArray( [1,2,3], mask=numpy.array([0, 1, 1], numpy.bool_) )
+        da = mumpy.mdaZeros( (2,3), numpy.float64, mask=mask )
+        da = mumpy.mdaOnes( (2,3), numpy.float64, mask=mask )
+        da = mumpy.mdaArray( [1,2,3], mask=numpy.array([0, 1, 1], numpy.bool_) )
 
     def test1d_1(self):
         """
@@ -38,7 +38,7 @@ class TestMaskedDistArray(unittest.TestCase):
         n = 10
         mask = numpy.zeros( (n,), numpy.bool_ )
         mask[-1] = 1 # last element is invalid
-        da = pnumpy.mdaZeros( (n,), dtyp, mask=mask )
+        da = mumpy.mdaZeros( (n,), dtyp, mask=mask )
         # expose the last element
         da.expose( slce=(slice(-1, None, None),), winID='left' )
         # set data
@@ -73,7 +73,7 @@ class TestMaskedDistArray(unittest.TestCase):
         # create the dist array
         n = 10
         mask = numpy.zeros( (n,), numpy.bool_ )
-        da = pnumpy.mdaZeros( (n,), dtyp, mask=mask )
+        da = mumpy.mdaZeros( (n,), dtyp, mask=mask )
         # expose the last element
         da.expose( slce=(slice(-1, None, None),), winID='left' )
         # set data
@@ -107,7 +107,7 @@ class TestMaskedDistArray(unittest.TestCase):
 
         # create the dist array
         n = 10
-        da = pnumpy.mdaZeros( (n,), dtyp ) # all data are valid
+        da = mumpy.mdaZeros( (n,), dtyp ) # all data are valid
         # expose the last element
         da.expose( slce=(slice(-1, None, None),), winID='left' )
         # set data
@@ -133,7 +133,7 @@ class TestMaskedDistArray(unittest.TestCase):
         # create the dist array, the sizes are local to each processor
         mask = numpy.zeros( (2,3), numpy.bool_ )
         mask[1, 2] = 1
-        da = pnumpy.mdaZeros( (2,3), numpy.float32, mask=mask )
+        da = mumpy.mdaZeros( (2,3), numpy.float32, mask=mask )
 
         # processor rank and number of processes
         rk = da.rk

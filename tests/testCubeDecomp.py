@@ -1,4 +1,4 @@
-import pnumpy
+import mumpy
 import numpy
 import unittest
 from functools import reduce
@@ -17,14 +17,14 @@ class TestCubeDecomp(unittest.TestCase):
         """
         Test 0-dimensional decomp
         """
-        decomp = pnumpy.CubeDecomp(self.sz, ())
+        decomp = mumpy.CubeDecomp(self.sz, ())
         assert(not decomp.isValid())
 
     def test1(self):
         """
         Test 1-dimensional decomp
         """
-        decomp = pnumpy.CubeDecomp(self.sz, dims=(8,))
+        decomp = mumpy.CubeDecomp(self.sz, dims=(8,))
         if decomp.isValid():
             slab = decomp.getSlab(self.rk)
             for disp in (1,), (-1,):
@@ -34,7 +34,7 @@ class TestCubeDecomp(unittest.TestCase):
         """
         Test 2-dimensional decomp
         """
-        decomp = pnumpy.CubeDecomp(self.sz, dims=(8, 16))
+        decomp = mumpy.CubeDecomp(self.sz, dims=(8, 16))
         if decomp.isValid():
             slab = decomp.getSlab(self.rk)
             for disp in (1, 0), (-1, 0), (1, -1):
@@ -44,7 +44,7 @@ class TestCubeDecomp(unittest.TestCase):
         """
         Test 3-dimensional decomp
         """
-        decomp = pnumpy.CubeDecomp(self.sz, dims=(8, 16, 9))
+        decomp = mumpy.CubeDecomp(self.sz, dims=(8, 16, 9))
         if decomp.isValid():
             slab = decomp.getSlab(self.rk)
             for disp in (0, 1, 0), (-1, 0, 0), (1, -1, 0), (1, -1, -1):
@@ -54,7 +54,7 @@ class TestCubeDecomp(unittest.TestCase):
         """
         Test invalid domain
         """
-        decomp = pnumpy.CubeDecomp(7, dims=(8, 16, 9))
+        decomp = mumpy.CubeDecomp(7, dims=(8, 16, 9))
         assert(not decomp.isValid())
        
 if __name__ == '__main__':
