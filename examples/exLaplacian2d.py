@@ -1,5 +1,5 @@
-import mumpy
-from mumpy import CubeDecomp
+import mpinum
+from mpinum import CubeDecomp
 import sys
 import numpy
 from mpi4py import MPI
@@ -53,7 +53,7 @@ yy = numpy.outer( numpy.ones( (nx/npx,), numpy.float64 ), ys[jBeg:jEnd] )
 zz = numpy.sin(numpy.pi*xx) * numpy.cos(2*numpy.pi*yy)
 
 # create and set distributed array
-zda = mumpy.gdaZeros( zz.shape, zz.dtype, numGhosts=1 )
+zda = mpinum.gdaZeros( zz.shape, zz.dtype, numGhosts=1 )
 zda[:] = zz
 
 # compute the star Laplacian in the interior, this does not require

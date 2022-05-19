@@ -1,4 +1,4 @@
-import mumpy
+import mpinum
 import numpy
 import unittest
 from functools import reduce
@@ -6,7 +6,7 @@ from mpi4py import MPI
 
 class TestPNumpy(unittest.TestCase):
     """
-    Test mumpy
+    Test mpinum
     """
 
     def setUp(self):
@@ -22,7 +22,7 @@ class TestPNumpy(unittest.TestCase):
         # create the ghosted dist array
         n = 10
         mask = numpy.zeros( (n), numpy.bool_ )
-        da = mumpy.gmdaZeros( (n,), dtyp, mask=mask, numGhosts=1 )
+        da = mpinum.gmdaZeros( (n,), dtyp, mask=mask, numGhosts=1 )
 
         # set data to process dependent value, 
         # da.rk is the mpi proc ID
@@ -52,7 +52,7 @@ class TestPNumpy(unittest.TestCase):
 
         # create the dist array, the sizes are local to each processor
         mask = numpy.zeros( (2,3), numpy.bool_ )
-        da = mumpy.gmdaZeros( (2,3), numpy.float32, mask=mask, numGhosts=1 )
+        da = mpinum.gmdaZeros( (2,3), numpy.float32, mask=mask, numGhosts=1 )
 
         # processor rank and number of processes
         rk = da.rk
@@ -79,7 +79,7 @@ class TestPNumpy(unittest.TestCase):
         # create the dist array, the sizes are local to each processor
         mask = numpy.zeros( (2,3), numpy.bool_ )
         mask[0, 0] = 1
-        da = mumpy.gmdaZeros( (2,3), numpy.float32, mask=mask, numGhosts=1 )
+        da = mpinum.gmdaZeros( (2,3), numpy.float32, mask=mask, numGhosts=1 )
 
         # processor rank and number of processes
         rk = da.rk
@@ -108,8 +108,8 @@ class TestPNumpy(unittest.TestCase):
         """
         2d array, apply Laplacian, periodic along the two axes
         """
-        from mumpy import CubeDecomp
-        from mumpy import MultiArrayIter
+        from mpinum import CubeDecomp
+        from mpinum import MultiArrayIter
         import operator
         from math import sin, pi
 
@@ -140,8 +140,8 @@ class TestPNumpy(unittest.TestCase):
         nsLocal = numpy.array([s.stop - s.start for s in localSlices])
         
         # create the dist arrays
-        da = mumpy.gmdaZeros(nsLocal, numpy.float32, mask=None, numGhosts=1)
-        laplacian = mumpy.gmdaZeros(nsLocal, numpy.float32, numGhosts=1)
+        da = mpinum.gmdaZeros(nsLocal, numpy.float32, mask=None, numGhosts=1)
+        laplacian = mpinum.gmdaZeros(nsLocal, numpy.float32, numGhosts=1)
 
         # set the data
         for it in MultiArrayIter(nsLocal):

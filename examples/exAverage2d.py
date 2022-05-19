@@ -1,6 +1,6 @@
-import mumpy
-from mumpy import CubeDecomp
-from mumpy import Partition
+import mpinum
+from mpinum import CubeDecomp
+from mpinum import Partition
 import sys
 import numpy
 from mpi4py import MPI
@@ -90,7 +90,7 @@ if not dc.getDecomp():
         sys.exit(1)
 
 # create and set the input distributed array
-inputData = mumpy.gdaZeros((nx, ny), numpy.float32, numGhosts=1)
+inputData = mpinum.gdaZeros((nx, ny), numpy.float32, numGhosts=1)
 setValues(nxG, nyG, iBeg, iEnd, jBeg, jEnd, inputData)
 
 # store the number of times a cell has an invalid neighbor so 

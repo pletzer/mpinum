@@ -7,7 +7,7 @@ Apply Laplacian stencil to distributed array data
 # external dependencies
 from mpi4py import MPI
 import numpy
-from mumpy import gdaZeros, Partition
+from mpinum import gdaZeros, Partition
 
 
 class Laplacian:

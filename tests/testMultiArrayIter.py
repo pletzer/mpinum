@@ -1,14 +1,14 @@
-import mumpy
+import mpinum
 import numpy
 import operator
 import unittest
 from mpi4py import MPI
-from mumpy.pnMultiArrayIter import MultiArrayIter
+from mpinum.pnMultiArrayIter import MultiArrayIter
 from functools import reduce
 
 class TestMultiArrayIter(unittest.TestCase):
     """
-    Test mumpy
+    Test mpinum
     """
 
     def setUp(self):

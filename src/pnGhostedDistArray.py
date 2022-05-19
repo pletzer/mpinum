@@ -5,7 +5,7 @@ Distributed array class with ghosts
 """
 
 import numpy
-from mumpy import DistArray, MaskedDistArray
+from mpinum import DistArray, MaskedDistArray
 
 
 def ghostedDistArrayFactory(BaseClass):

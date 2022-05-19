@@ -1,14 +1,14 @@
 """
-mumpy: Parallel numpy array
+mpinum: Parallel numpy array
 """
 __all__ = ["pnDistArray", "pnGhostedDistArray", "pnMultiArrayIter", "pnCubeDecomp"]
-from mumpy.pnDistArray import DistArray, daZeros, daOnes, daArray
-from mumpy.pnDistArray import MaskedDistArray, mdaZeros, mdaOnes, mdaArray
-from mumpy.pnGhostedDistArray import GhostedDistArray, gdaZeros, gdaOnes, gdaArray
-from mumpy.pnGhostedDistArray import GhostedMaskedDistArray, gmdaZeros, gmdaOnes, gmdaArray
-from mumpy.pnMultiArrayIter import MultiArrayIter
-from mumpy.pnCubeDecomp import CubeDecomp
-from mumpy.pnPartition import Partition
-from mumpy.pnDomainPartitionIter import DomainPartitionIter
-from mumpy.pnLaplacian import Laplacian
-from mumpy.pnStencilOperator import StencilOperator
+from mpinum.pnDistArray import DistArray, daZeros, daOnes, daArray
+from mpinum.pnDistArray import MaskedDistArray, mdaZeros, mdaOnes, mdaArray
+from mpinum.pnGhostedDistArray import GhostedDistArray, gdaZeros, gdaOnes, gdaArray
+from mpinum.pnGhostedDistArray import GhostedMaskedDistArray, gmdaZeros, gmdaOnes, gmdaArray
+from mpinum.pnMultiArrayIter import MultiArrayIter
+from mpinum.pnCubeDecomp import CubeDecomp
+from mpinum.pnPartition import Partition
+from mpinum.pnDomainPartitionIter import DomainPartitionIter
+from mpinum.pnLaplacian import Laplacian
+from mpinum.pnStencilOperator import StencilOperator

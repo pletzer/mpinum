@@ -9,9 +9,9 @@ from mpi4py import MPI
 import numpy
 
 # internal dependencies
-from mumpy import daZeros
-from mumpy import DomainPartitionIter
-from mumpy import CubeDecomp
+from mpinum import daZeros
+from mpinum import DomainPartitionIter
+from mpinum import CubeDecomp
 
 
 class StencilOperator:
