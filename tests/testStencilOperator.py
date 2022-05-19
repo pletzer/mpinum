@@ -9,8 +9,8 @@ import sys
 import unittest
 from mpi4py import MPI
 import numpy
-from mumpy import CubeDecomp
-from mumpy import StencilOperator
+from mpinum import CubeDecomp
+from mpinum import StencilOperator
 
 class TestLaplacian(unittest.TestCase):
 

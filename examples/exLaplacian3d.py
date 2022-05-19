@@ -1,8 +1,8 @@
 
 from __future__ import print_function
 
-import mumpy
-from mumpy import CubeDecomp
+import mpinum
+from mpinum import CubeDecomp
 import sys
 import numpy
 import math
@@ -76,7 +76,7 @@ f = numpy.outer(numpy.outer(numpy.sin(numpy.pi*x),
                                                               kEnd - kBeg))
 
 # compute the Laplacian
-lapl = mumpy.Laplacian(dc, periodic=(True, True, True))
+lapl = mpinum.Laplacian(dc, periodic=(True, True, True))
 for i in range(nTimes):
     fout = lapl.apply(f)
 

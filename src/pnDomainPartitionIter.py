@@ -4,8 +4,8 @@
 import numpy
 
 # internal dependencies
-from mumpy import Partition
-from mumpy import MultiArrayIter
+from mpinum import Partition
+from mpinum import MultiArrayIter
 
 
 class DomainPartitionIter:
