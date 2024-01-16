@@ -215,7 +215,7 @@ MaskedDistArray = distArrayFactory(numpy.ma.masked_array)
 #
 # Distributed array static constructors
 #
-def daArray(arry, dtype=numpy.float):
+def daArray(arry, dtype=numpy.float32):
     """
     Array constructor for numpy distributed array
     @param arry numpy-like array
@@ -226,7 +226,7 @@ def daArray(arry, dtype=numpy.float):
     return res
 
 
-def daZeros(shap, dtype=numpy.float):
+def daZeros(shap, dtype=numpy.float32):
     """
     Zero constructor for numpy distributed array
     @param shap the shape of the array
@@ -237,7 +237,7 @@ def daZeros(shap, dtype=numpy.float):
     return res
 
 
-def daOnes(shap, dtype=numpy.float):
+def daOnes(shap, dtype=numpy.float32):
     """
     One constructor for numpy distributed array
     @param shap the shape of the array
@@ -251,7 +251,7 @@ def daOnes(shap, dtype=numpy.float):
 #
 # Masked distributed array static constructors
 #
-def mdaArray(arry, dtype=numpy.float, mask=None):
+def mdaArray(arry, dtype=numpy.float32, mask=None):
     """
     Array constructor for masked distributed array
     @param arry numpy-like array
@@ -264,7 +264,7 @@ def mdaArray(arry, dtype=numpy.float, mask=None):
     return res
 
 
-def mdaZeros(shap, dtype=numpy.float, mask=None):
+def mdaZeros(shap, dtype=numpy.float32, mask=None):
     """
     Zero constructor for masked distributed array
     @param shap the shape of the array
@@ -277,7 +277,7 @@ def mdaZeros(shap, dtype=numpy.float, mask=None):
     return res
 
 
-def mdaOnes(shap, dtype=numpy.float, mask=None):
+def mdaOnes(shap, dtype=numpy.float32, mask=None):
     """
     One constructor for masked distributed array
     @param shap the shape of the array

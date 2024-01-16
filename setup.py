@@ -9,7 +9,7 @@ README = (HERE / "README.md").read_text()
 
 
 setup(name = 'mpinum',
-      version = '1.4.2',
+      version = '1.4.3',
       description = 'A very lightweight implementation of distributed arrays',
       long_description = README,
       long_description_content_type="text/markdown",
